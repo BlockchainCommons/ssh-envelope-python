@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives.serialization import load_ssh_private_key
 from cryptography.hazmat.backends import default_backend
 from getpass import getpass
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARN)
 logger = logging.getLogger(__name__)
 
 def load_private_key(private_key_data, password=None):
@@ -88,4 +88,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
