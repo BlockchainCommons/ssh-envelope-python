@@ -2,10 +2,10 @@ import logging
 import argparse
 import sys
 
-from .utils import logconfig
+from . import logconfig
 __all__ = ['logconfig']
 
-from .utils.ssh_object_utils import import_ssh_object
+from .ssh_object_utils import import_ssh_object
 
 logger = logging.getLogger(__name__)
 

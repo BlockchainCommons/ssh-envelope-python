@@ -1,4 +1,4 @@
-from ssh_envelope.utils.envelope_utils import tagged_string_hex
+from ssh_envelope.envelope_utils import tagged_string_hex
 
 def test_encode_tagged_string():
     # Test case 1: Basic string with tag 42
