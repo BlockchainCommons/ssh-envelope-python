@@ -9,16 +9,25 @@ from cryptography.hazmat.backends import default_backend
 from . import logconfig
 __all__ = ['logconfig']
 
-from .envelope_utils import ssh_private_key_envelope, ssh_public_key_envelope
+from .envelope_utils import ssh_private_key_envelope, ssh_public_key_envelope, ssh_signature_envelope
 
 logger = logging.getLogger(__name__)
 
 def import_ssh_object(input_string):
     input_data = input_string.encode()
-    object = import_public_key(input_data)
+    object = import_signature(input_data)
+    if object is None:
+        object = import_public_key(input_data)
     if object is None:
         object = import_private_key(input_data)
     return object
+
+def import_signature(input_data):
+    if b"BEGIN SSH SIGNATURE" in input_data:
+        envelope = ssh_signature_envelope(input_data.decode())
+        return envelope
+    else:
+        return None
 
 def import_public_key(input_data):
     try:

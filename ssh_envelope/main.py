@@ -28,7 +28,7 @@ def import_object(args):
     if envelope is None:
         raise ValueError("Failed to import SSH object")
 
-    sys.stdout.write(envelope)
+    sys.stdout.write(envelope + '\n')
 
 def export_object(args):
     logger.info(f"Exporting object")
