@@ -5,6 +5,7 @@ import sys
 from ssh_envelope import logconfig
 __all__ = ['logconfig']
 
+from ssh_envelope.envelope_utils import export_ssh_object
 from ssh_envelope.ssh_object_utils import import_ssh_object
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,12 @@ def import_object(args):
 
 def export_object(args):
     logger.info(f"Exporting object")
-    # Implement the export_object functionality here
+    envelope = args.envelope
+    object = export_ssh_object(envelope)
+    if object is None:
+        raise ValueError("Failed to export SSH object")
+
+    sys.stdout.write(object + '\n')
 
 def main():
     parser = argparse.ArgumentParser(description="Envelope/SSH Key Management Tool")

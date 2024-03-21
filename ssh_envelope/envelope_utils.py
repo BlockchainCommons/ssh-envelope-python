@@ -32,6 +32,9 @@ def verified_by_assertion_envelope(signature):
 def format_envelope(envelope):
     return run_command(["envelope", "format", envelope])
 
+def extract_tagged_cbor_subject(envelope):
+    return run_command(["envelope", "extract", "cbor", envelope])
+
 def ssh_private_key_envelope(private_key_string):
     return tagged_string_envelope(private_key_string, ssh_private_key_tag)
 
@@ -40,3 +43,19 @@ def ssh_public_key_envelope(public_key_string):
 
 def ssh_signature_envelope(signature_string):
     return tagged_string_envelope(signature_string, ssh_signature_tag)
+
+def extract_cbor_tag_and_value(cbor):
+    c = cbor2.loads(bytes.fromhex(cbor))
+    return c.tag, c.value
+
+def export_ssh_object(envelope):
+    cbor = extract_tagged_cbor_subject(envelope)
+    tag, value = extract_cbor_tag_and_value(cbor)
+    if tag == ssh_private_key_tag:
+        return value
+    elif tag == ssh_public_key_tag:
+        return value
+    elif tag == ssh_signature_tag:
+        return value
+    else:
+        raise ValueError("Invalid SSH object")
