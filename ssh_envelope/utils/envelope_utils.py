@@ -1,3 +1,6 @@
+import logging
+from . import logconfig
+
 import os
 import cbor2
 import subprocess
