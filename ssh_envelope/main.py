@@ -1,12 +1,11 @@
-#!python3
-
 import logging
-from .utils import logconfig
 import argparse
-
 import sys
-from .utils.file_utils import read_file
-from .utils.ssh_keys_utils import deserialize_ssh_private_key, serialize_private_key
+
+from .utils import logconfig
+__all__ = ['logconfig']
+
+from .utils.ssh_object_utils import import_ssh_object
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +17,11 @@ def import_object(args):
         logger.info("Reading data from stdin")
         data = sys.stdin.read()
 
-    print(data)
-    pem = deserialize_ssh_private_key(data.encode())
-    pem_key = serialize_private_key(pem)
-    print(pem_key)
+    envelope = import_ssh_object(data)
+    if envelope is None:
+        raise ValueError("Failed to import SSH object")
+
+    sys.stdout.write(envelope)
 
 def export_object(args):
     logger.info(f"Exporting object")
@@ -43,7 +43,11 @@ def main():
 
     args = parser.parse_args()
     if hasattr(args, 'func'):
-        args.func(args)
+        try:
+            args.func(args)
+        except Exception as e:
+            sys.stderr.write(f"Error: {str(e)}\n")
+            sys.exit(1)
     else:
         parser.print_help()
         sys.exit(1)

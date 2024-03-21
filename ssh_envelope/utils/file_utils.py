@@ -1,6 +1,3 @@
-import logging
-from . import logconfig
-
 def read_file(path):
     try:
         with open(path, 'rb') as key_file:
