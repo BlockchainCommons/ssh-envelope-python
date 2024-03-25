@@ -10,7 +10,7 @@ from ssh_envelope.ssh_object_utils import import_ssh_object
 
 logger = logging.getLogger(__name__)
 
-def import_object(args):
+def import_object(args: argparse.Namespace):
     logger.info(f"Importing object")
     object_data = None
 
@@ -31,7 +31,7 @@ def import_object(args):
 
     sys.stdout.write(envelope + '\n')
 
-def export_object(args):
+def export_object(args: argparse.Namespace):
     logger.info(f"Exporting object")
     envelope = args.envelope
     object = export_ssh_object(envelope)

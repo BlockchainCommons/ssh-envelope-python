@@ -4,6 +4,7 @@ from getpass import getpass
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_ssh_private_key
+from cryptography.hazmat.primitives.serialization.ssh import SSHPrivateKeyTypes, SSHPublicKeyTypes;
 from cryptography.hazmat.backends import default_backend
 
 from . import logconfig
@@ -13,8 +14,8 @@ from .envelope_utils import ssh_private_key_envelope, ssh_public_key_envelope, s
 
 logger = logging.getLogger(__name__)
 
-def import_ssh_object(input_string):
-    input_data = input_string.encode()
+def import_ssh_object(string: str):
+    input_data = string.encode()
     object = import_signature(input_data)
     if object is None:
         object = import_public_key(input_data)
@@ -22,14 +23,14 @@ def import_ssh_object(input_string):
         object = import_private_key(input_data)
     return object
 
-def import_signature(input_data):
+def import_signature(input_data: bytes) -> str | None:
     if b"BEGIN SSH SIGNATURE" in input_data:
         envelope = ssh_signature_envelope(input_data.decode())
         return envelope
     else:
         return None
 
-def import_public_key(input_data):
+def import_public_key(input_data: bytes) -> str | None:
     try:
         public_key = serialization.load_ssh_public_key(input_data, backend=default_backend())
         pem_key = serialize_public_key(public_key)
@@ -38,7 +39,7 @@ def import_public_key(input_data):
     except:
         return None
 
-def import_private_key(input_data):
+def import_private_key(input_data: bytes) -> str | None:
     try:
         max_attempts = 3
         for attempt in range(1, max_attempts + 1):
@@ -71,7 +72,8 @@ def import_private_key(input_data):
     except:
         return None
 
-def load_private_key(private_key_data, password=None):
+
+def load_private_key(private_key_data: bytes, password: bytes | None = None) -> SSHPrivateKeyTypes:
     try:
         private_key = load_ssh_private_key(private_key_data, password=password, backend=default_backend())
         return private_key
@@ -83,7 +85,7 @@ def load_private_key(private_key_data, password=None):
         else:
             raise ValueError(f"Failed to decrypt the SSH key or unsupported key format: {str(e)}")
 
-def serialize_private_key(private_key):
+def serialize_private_key(private_key: SSHPrivateKeyTypes) -> str:
     pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.OpenSSH,
@@ -91,7 +93,7 @@ def serialize_private_key(private_key):
     )
     return pem.decode()
 
-def serialize_public_key(public_key):
+def serialize_public_key(public_key: SSHPublicKeyTypes) -> str:
     pem = public_key.public_bytes(
         encoding=serialization.Encoding.OpenSSH,
         format=serialization.PublicFormat.OpenSSH

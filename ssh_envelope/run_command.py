@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-def run_command(command):
+def run_command(command: list[str]) -> str:
     """
     Run a command in the shell and return the output.
 

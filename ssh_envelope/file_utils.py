@@ -1,4 +1,4 @@
-def read_file(path):
+def read_file(path: str) -> bytes:
     try:
         with open(path, 'rb') as key_file:
             data = key_file.read()
