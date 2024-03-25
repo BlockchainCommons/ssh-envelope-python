@@ -1,3 +1,4 @@
+from ssh_envelope.ssh_keygen_utils import sign_data
 from ssh_envelope.ssh_object_utils import import_ssh_object
 
 example_ssh_private_key = '''
@@ -12,9 +13,11 @@ KTzybWCBkZWnO2d4KoBgAAAAHHdvbGZAV29sZnMtTWFjQm9vay1Qcm8ubG9jYWwB
 
 example_private_key_envelope = 'ur:envelope/tpcstanehnkkadlsdpdpdpdpdpfwfeflgaglcxgwgdfeglgugufdcxgdgmgahffpghfecxgrfehkdpdpdpdpdpbkideofwjzidjtglknhsfxehjphthdjejyieimfefpfpfpfpfpfwfleckoidjngofpfpfpfpfeidjneskphtgyfpfpfpfpfpfpfpfpfpfwfpfpfpfpgtktfpfpfpfpjykniaeyiojyhthggykkglghgoksbkgwgyfpfpfpfxfwidimfejzghjljojoiofpdyiheeiojokkdykpetfykpgminjeetetjnehioiohtflhfjoknjyjtihfxjsfphkfpfpfpfpgaioknfljnjsiegtksjojsjtgyfpfpfpfpjykniaeyiojybkhthggykkglghgoksgwgyfpfpfpfxfwidimfejzghjljojoiofpdyiheeiojokkdykpetfykpgminjeetetjnehioiohtflhfjoknjyjtihfxjsfphkfpfpfpfpfefpemdldlecgrhkkokoenfgjliminbkktjsdngrfeisgaksgmjnfpiejeksjeeciogthdgseejkjojsknfwiogagtehkpgtguhfgwinjnjnfpfygmeminfxjtgsguemktgwecflgrghknkkidhgfxfwjehthgjtgweyieeegrjlfwiofpfpfpfpbkfpfpfefxfpktgyfgbkdpdpdpdpdpfeglfycxgwgdfeglgugufdcxgdgmgahffpghfecxgrfehkdpdpdpdpdpbkiyrovsat'
 
-def test_export_import_private_key():
+def test_sign():
     envelope = import_ssh_object(example_ssh_private_key)
-    # assert envelope == example_private_key_envelope
-    print(envelope)
+    if envelope is None:
+        raise ValueError("Failed to import SSH object")
+    signature = sign_data(envelope, b"hello")
+    print(signature)
 
-test_export_import_private_key()
+test_sign()

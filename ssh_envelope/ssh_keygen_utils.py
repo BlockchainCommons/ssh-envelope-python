@@ -5,12 +5,11 @@ from typing import Optional
 from ssh_envelope.envelope_utils import export_ssh_object
 from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
+from ssh_envelope.ssh_object_utils import import_signature
 
 def sign_data(private_key_envelope: str, message: bytes, namespace: str = "file") -> str:
     with tempfile.TemporaryDirectory() as tmpdir:
         private_key_file = None
-        message_file = None
-        signature_file = None
 
         try:
             # Export the private key from the envelope
@@ -21,25 +20,21 @@ def sign_data(private_key_envelope: str, message: bytes, namespace: str = "file"
             with open(private_key_file, "w") as f:
                 f.write(private_key)
 
-            # Write the message to a temporary file
-            message_file = os.path.join(tmpdir, "message")
-            with open(message_file, "wb") as f:
-                f.write(message)
+            # Set appropriate permissions on the private key file
+            os.chmod(private_key_file, 0o600)
 
-            # Run ssh-keygen to sign the message
-            signature_file = os.path.join(tmpdir, "signature")
-            run_command(["ssh-keygen", "-Y", "sign", "-f", private_key_file, "-n", namespace, "-s", signature_file, message_file])
+            # Run ssh-keygen to sign the message, passing the message via stdin
+            signature = run_command(["ssh-keygen", "-Y", "sign", "-f", private_key_file, "-n", namespace], stdin=message)
 
-            # Read the signature from the file
-            with open(signature_file, "r") as f:
-                signature = f.read()
-
-            return signature
+            # Import the signature into an envelope
+            envelope = import_signature(signature)
+            if envelope is None:
+                raise ValueError("Failed to import signature")
+            return envelope
 
         except Exception as e:
             raise Exception(f"Failed to sign data: {str(e)}") from e
 
         finally:
-            # Securely delete the temporary files
-            for file in [private_key_file, message_file, signature_file]:
-                secure_delete(file)
+            # Securely delete the temporary private key file
+            secure_delete(private_key_file)

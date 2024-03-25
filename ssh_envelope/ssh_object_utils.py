@@ -9,7 +9,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 
-from .envelope_utils import ssh_private_key_envelope
+from .envelope_utils import export_private_key, ssh_private_key_envelope, ssh_public_key_envelope
 
 from . import logconfig
 __all__ = ['logconfig']
@@ -104,7 +104,6 @@ def serialize_public_key(public_key: SSHPublicKeyTypes) -> str:
     )
     return pem.decode()
 
-
 def generate_ed25519_private() -> str:
     """
     Generates a new Ed25519 private key, serializes it to OpenSSH format, and encapsulates it in a Gordian envelope.
@@ -126,3 +125,34 @@ def generate_ed25519_private() -> str:
     envelope = ssh_private_key_envelope(ssh_private_key)
 
     return envelope
+
+def derive_public_key(private_key_envelope: str) -> str:
+    """
+    Extracts the SSH private key from the given envelope, derives the corresponding
+    public key, serializes it to OpenSSH format, and encapsulates it in a new envelope.
+
+    Args:
+        private_key_envelope (str): The envelope containing the SSH private key.
+
+    Returns:
+        str: The envelope containing the derived SSH public key.
+    """
+    # Extract the private key from the envelope
+    private_key_string = export_private_key(private_key_envelope)
+
+    # Load the private key object
+    private_key = load_ssh_private_key(private_key_string.encode(), password=None, backend=default_backend())
+
+    # Derive the public key
+    public_key = private_key.public_key()
+
+    # Serialize the public key to OpenSSH format
+    ssh_public_key = public_key.public_bytes(
+        encoding=serialization.Encoding.OpenSSH,
+        format=serialization.PublicFormat.OpenSSH
+    ).decode('utf-8')
+
+    # Encapsulate the serialized public key in a new envelope
+    public_key_envelope = ssh_public_key_envelope(ssh_public_key)
+
+    return public_key_envelope

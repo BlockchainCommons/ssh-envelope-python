@@ -1,12 +1,13 @@
 import os
 import subprocess
 
-def run_command(command: list[str]) -> str:
+def run_command(command: list[str], stdin: bytes | None = None) -> bytes:
     """
     Run a command in the shell and return the output.
 
     Args:
-        command (str): The command to be executed.
+        command (list[str]): The command to be executed as a list of strings.
+        stdin (bytes | None): Optional bytes to send to the command's standard input.
 
     Returns:
         str: The output of the command.
@@ -14,11 +15,15 @@ def run_command(command: list[str]) -> str:
     env = os.environ.copy()
     cargo_bin_path = os.path.expanduser("~/.cargo/bin")
     env["PATH"] = cargo_bin_path + os.pathsep + env["PATH"]
-    # print(command)
-    result = subprocess.run(command, capture_output=True, text=True, env=env)
+
+    input_data = stdin if stdin else None
+    result = subprocess.run(command, input=input_data, capture_output=True, env=env)
+
     error_status = result.returncode
-    stdout = result.stdout.strip()
-    stderr = result.stderr.strip()
+    stdout = result.stdout
+    stderr = result.stderr
+
     if error_status != 0:
         raise Exception(f"Command '{command}' failed with error code {error_status}: {stderr}")
+
     return stdout
