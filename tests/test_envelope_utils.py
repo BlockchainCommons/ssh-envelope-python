@@ -2,29 +2,29 @@ import ssh_envelope.envelope_utils as utils
 import inspect
 
 def test_string_envelope():
-    string = "Hello, CBOR!"
+    string = "Hello!"
     envelope = utils.string_envelope(string)
     formatted_envelope = utils.format_envelope(envelope)
-    assert formatted_envelope == '"Hello, CBOR!"'
+    assert formatted_envelope == '"Hello!"'
 
 def test_wrap_envelope():
-    string = "Hello, CBOR!"
+    string = "Hello!"
     envelope = utils.string_envelope(string)
     wrapped_envelope = utils.wrap_envelope(envelope)
     formatted_envelope = utils.format_envelope(wrapped_envelope)
     assert formatted_envelope == inspect.cleandoc('''
     {
-        "Hello, CBOR!"
+        "Hello!"
     }
     ''')
 
 def test_tagged_string_envelope():
-    string = "Hello, CBOR!"
+    string = "Hello!"
     tag = 42
     envelope = utils.tagged_string_envelope(tag, string)
     formatted_envelope = utils.format_envelope(envelope)
     assert formatted_envelope == inspect.cleandoc('''
-    42("Hello, CBOR!")
+    42("Hello!")
     ''')
 
 def test_known_value_envelope():
