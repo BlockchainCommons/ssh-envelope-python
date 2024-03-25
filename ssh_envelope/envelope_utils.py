@@ -7,6 +7,9 @@ ssh_public_key_tag = 40801
 ssh_signature_tag = 40802
 ssh_certificate_tag = 40803
 
+def format(envelope):
+    return run_command(["envelope", "format", envelope])
+
 def tagged_string_hex(string, tag):
     return cbor2.dumps(cbor2.CBORTag(tag, string)).hex()
 
@@ -21,19 +24,13 @@ def tagged_string_envelope(string, tag):
     return run_command(["envelope", "subject", "type", "cbor", hex])
 
 def known_value_envelope(value):
-    return run_command(["envelope", "subject", "type", "known", value])
+    return run_command(["envelope", "subject", "type", "known", str(value)])
 
 def assertion_envelope(pred_type, pred_value, obj_type, obj_value):
-    return run_command(["envelope", "subject", "assertion", pred_type, pred_value, obj_type, obj_value])
+    return run_command(["envelope", "subject", "assertion", pred_type, str(pred_value), obj_type, str(obj_value)])
 
-def verified_by_assertion_envelope(signature):
-    return assertion_envelope("known", "verifiedBy", "cbor", signature)
-
-def format_envelope(envelope):
-    return run_command(["envelope", "format", envelope])
-
-def extract_tagged_cbor_subject(envelope):
-    return run_command(["envelope", "extract", "cbor", envelope])
+def verified_by_assertion_envelope(signature_cbor_hex):
+    return assertion_envelope("known", "verifiedBy", "cbor", signature_cbor_hex)
 
 def ssh_private_key_envelope(private_key_string):
     return tagged_string_envelope(private_key_string, ssh_private_key_tag)
@@ -47,6 +44,9 @@ def ssh_signature_envelope(signature_string):
 def extract_cbor_tag_and_value(cbor):
     c = cbor2.loads(bytes.fromhex(cbor))
     return c.tag, c.value
+
+def extract_tagged_cbor_subject(envelope):
+    return run_command(["envelope", "extract", "cbor", envelope])
 
 def export_ssh_object(envelope):
     cbor = extract_tagged_cbor_subject(envelope)
