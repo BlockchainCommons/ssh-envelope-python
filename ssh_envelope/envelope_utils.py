@@ -15,7 +15,7 @@ def string_envelope(string: str) -> str:
 def wrap_envelope(envelope: str) -> str:
     return run_command(["envelope", "subject", "type", "wrapped", envelope]).decode().strip()
 
-def tagged_string_envelope(string: str, tag: int) -> str:
+def tagged_string_envelope(tag: int, string: str) -> str:
     hex = tagged_string(tag, string).hex()
     return run_command(["envelope", "subject", "type", "cbor", hex]).decode().strip()
 
@@ -29,13 +29,13 @@ def verified_by_assertion_envelope(signature_cbor_hex: str) -> str:
     return assertion_envelope("known", "verifiedBy", "cbor", signature_cbor_hex)
 
 def ssh_private_key_envelope(private_key_string: str) -> str:
-    return tagged_string_envelope(private_key_string, ssh_private_key_tag)
+    return tagged_string_envelope(ssh_private_key_tag, private_key_string)
 
 def ssh_public_key_envelope(public_key_string: str) -> str:
-    return tagged_string_envelope(public_key_string, ssh_public_key_tag)
+    return tagged_string_envelope(ssh_public_key_tag, public_key_string)
 
 def ssh_signature_envelope(signature_string: str) -> str:
-    return tagged_string_envelope(signature_string, ssh_signature_tag)
+    return tagged_string_envelope(ssh_signature_tag, signature_string)
 
 def extract_tagged_cbor_subject(envelope: str) -> bytes:
     hex = run_command(["envelope", "extract", "cbor", envelope]).decode()

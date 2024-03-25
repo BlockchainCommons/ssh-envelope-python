@@ -21,7 +21,7 @@ def test_wrap_envelope():
 def test_tagged_string_envelope():
     string = "Hello, CBOR!"
     tag = 42
-    envelope = utils.tagged_string_envelope(string, tag)
+    envelope = utils.tagged_string_envelope(tag, string)
     formatted_envelope = utils.format_envelope(envelope)
     assert formatted_envelope == inspect.cleandoc('''
     42("Hello, CBOR!")
