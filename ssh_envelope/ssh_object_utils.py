@@ -6,6 +6,10 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_ssh_private_key
 from cryptography.hazmat.primitives.serialization.ssh import SSHPrivateKeyTypes, SSHPublicKeyTypes;
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives import serialization
+
+from .envelope_utils import ssh_private_key_envelope
 
 from . import logconfig
 __all__ = ['logconfig']
@@ -99,3 +103,26 @@ def serialize_public_key(public_key: SSHPublicKeyTypes) -> str:
         format=serialization.PublicFormat.OpenSSH
     )
     return pem.decode()
+
+
+def generate_ed25519_private() -> str:
+    """
+    Generates a new Ed25519 private key, serializes it to OpenSSH format, and encapsulates it in a Gordian envelope.
+
+    Returns:
+        str: The Gordian envelope containing the serialized Ed25519 private key.
+    """
+    # Generate a new Ed25519 private key
+    private_key = Ed25519PrivateKey.generate()
+
+    # Serialize the private key to OpenSSH format
+    ssh_private_key = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.OpenSSH,
+        encryption_algorithm=serialization.NoEncryption()
+    ).decode('utf-8')
+
+    # Encapsulate the serialized private key in a Gordian envelope
+    envelope = ssh_private_key_envelope(ssh_private_key)
+
+    return envelope
