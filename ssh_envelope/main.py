@@ -10,7 +10,7 @@ from ssh_envelope.ssh_object_utils import derive_public_key, generate_ed25519_pr
 
 logger = logging.getLogger(__name__)
 
-def import_object(args: argparse.Namespace):
+def import_command(args: argparse.Namespace):
     logger.info(f"Importing SSH object")
     object_data = None
 
@@ -31,7 +31,7 @@ def import_object(args: argparse.Namespace):
 
     sys.stdout.write(envelope + '\n')
 
-def export_object(args: argparse.Namespace):
+def export_command(args: argparse.Namespace):
     logger.info(f"Exporting object")
     envelope = None
 
@@ -52,12 +52,12 @@ def export_object(args: argparse.Namespace):
 
     sys.stdout.write(object + '\n')
 
-def generate_private_key(args: argparse.Namespace):
+def generate_command(args: argparse.Namespace):
     logger.info(f"Generating Ed25519 private key")
     envelope = generate_ed25519_private()
     sys.stdout.write(envelope + '\n')
 
-def get_public_key(args: argparse.Namespace):
+def public_command(args: argparse.Namespace):
     logger.info(f"Deriving public key from private key")
 
     envelope = None
@@ -79,27 +79,27 @@ def main():
     parser = argparse.ArgumentParser(description="Envelope/SSH Key Management Tool")
     subparsers = parser.add_subparsers(help='commands')
 
-    # import_object command
+    # import_command
     parser_import = subparsers.add_parser('import', help='Convert an SSH object to an envelope')
     parser_import.add_argument('--object', help='SSH object as a string', default=None)
     parser_import.add_argument('--file', help='Path to the file containing the SSH object', default=None)
-    parser_import.set_defaults(func=import_object)
+    parser_import.set_defaults(func=import_command)
 
-    # export_object command
+    # export_command
     parser_export = subparsers.add_parser('export', help='Convert an envelope to an SSH object')
     parser_export.add_argument('--envelope', help='Envelope to export', default=None)
     parser_export.add_argument('--file', help='Path to the file containing the envelope', default=None)
-    parser_export.set_defaults(func=export_object)
+    parser_export.set_defaults(func=export_command)
 
-    # generate_private_key command
+    # generate_command
     parser_generate = subparsers.add_parser('generate', help='Generate a new Ed25519 private key')
-    parser_generate.set_defaults(func=generate_private_key)
+    parser_generate.set_defaults(func=generate_command)
 
-    # derive_public_key command
+    # public_command
     parser_public = subparsers.add_parser('public', help='Derive a public key from a private key')
     parser_public.add_argument('--envelope', help='Private key envelope', default=None)
     parser_public.add_argument('--file', help='Path to the file containing the private key envelope', default=None)
-    parser_public.set_defaults(func=get_public_key)
+    parser_public.set_defaults(func=public_command)
 
     args = parser.parse_args()
     if hasattr(args, 'func'):
