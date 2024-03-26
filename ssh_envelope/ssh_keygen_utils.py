@@ -7,7 +7,9 @@ from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
 from ssh_envelope.ssh_object_utils import import_signature
 
-def sign_message(message: bytes, private_key_envelope: str, namespace: str = "file") -> str:
+default_namespace = "file"
+
+def sign_message(message: bytes, private_key_envelope: str, namespace: str | None = None) -> str:
     with tempfile.TemporaryDirectory() as tmpdir:
         private_key_file = None
 
@@ -24,6 +26,7 @@ def sign_message(message: bytes, private_key_envelope: str, namespace: str = "fi
             os.chmod(private_key_file, 0o600)
 
             # Run ssh-keygen to sign the message, passing the message via stdin
+            namespace = namespace or default_namespace
             signature = run_command(["ssh-keygen", "-Y", "sign", "-f", private_key_file, "-n", namespace], stdin=message)
 
             # Import the signature into an envelope
@@ -39,7 +42,7 @@ def sign_message(message: bytes, private_key_envelope: str, namespace: str = "fi
             # Securely delete the temporary private key file
             secure_delete(private_key_file)
 
-def verify_message(message: bytes, signature_envelope: str, public_key_envelope: str, namespace: str = "file") -> bool:
+def verify_message(message: bytes, signature_envelope: str, public_key_envelope: str, namespace: str | None = None) -> bool:
     with tempfile.TemporaryDirectory() as tmpdir:
         signature_file = None
         allowed_signers_file = None
@@ -61,6 +64,7 @@ def verify_message(message: bytes, signature_envelope: str, public_key_envelope:
             key_type = key_parts[0]
             key_base64 = key_parts[1]
             identity = key_parts[2] if len(key_parts) > 2 else "identity"
+            namespace = namespace or default_namespace
 
             # Write the public key to a temporary file in the allowed_signers format
             allowed_signers_file = os.path.join(tmpdir, "allowed_signers")

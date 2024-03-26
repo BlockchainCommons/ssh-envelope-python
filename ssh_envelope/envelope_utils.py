@@ -80,3 +80,5 @@ def export_ssh_object(envelope: str) -> str:
         return value
     else:
         raise ValueError("Invalid SSH object")
+
+# def sign_envelope(envelope: str) -> str:
