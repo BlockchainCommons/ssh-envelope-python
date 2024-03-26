@@ -18,7 +18,7 @@ from .envelope_utils import ssh_private_key_envelope, ssh_public_key_envelope, s
 
 logger = logging.getLogger(__name__)
 
-def import_ssh_object(string: str):
+def import_ssh_object(string: str) -> str | None:
     input_data = string.encode()
     object = import_signature(input_data)
     if object is None:

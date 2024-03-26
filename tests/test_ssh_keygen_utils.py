@@ -1,5 +1,5 @@
-from ssh_envelope.ssh_keygen_utils import sign_data
-from ssh_envelope.ssh_object_utils import import_ssh_object
+from ssh_envelope.ssh_keygen_utils import sign_data, verify_data_signature
+from ssh_envelope.ssh_object_utils import derive_public_key, import_ssh_object
 
 example_ssh_private_key = '''
 -----BEGIN OPENSSH PRIVATE KEY-----
@@ -14,10 +14,13 @@ KTzybWCBkZWnO2d4KoBgAAAAHHdvbGZAV29sZnMtTWFjQm9vay1Qcm8ubG9jYWwB
 example_private_key_envelope = 'ur:envelope/tpcstanehnkkadlsdpdpdpdpdpfwfeflgaglcxgwgdfeglgugufdcxgdgmgahffpghfecxgrfehkdpdpdpdpdpbkideofwjzidjtglknhsfxehjphthdjejyieimfefpfpfpfpfpfwfleckoidjngofpfpfpfpfeidjneskphtgyfpfpfpfpfpfpfpfpfpfwfpfpfpfpgtktfpfpfpfpjykniaeyiojyhthggykkglghgoksbkgwgyfpfpfpfxfwidimfejzghjljojoiofpdyiheeiojokkdykpetfykpgminjeetetjnehioiohtflhfjoknjyjtihfxjsfphkfpfpfpfpgaioknfljnjsiegtksjojsjtgyfpfpfpfpjykniaeyiojybkhthggykkglghgoksgwgyfpfpfpfxfwidimfejzghjljojoiofpdyiheeiojokkdykpetfykpgminjeetetjnehioiohtflhfjoknjyjtihfxjsfphkfpfpfpfpfefpemdldlecgrhkkokoenfgjliminbkktjsdngrfeisgaksgmjnfpiejeksjeeciogthdgseejkjojsknfwiogagtehkpgtguhfgwinjnjnfpfygmeminfxjtgsguemktgwecflgrghknkkidhgfxfwjehthgjtgweyieeegrjlfwiofpfpfpfpbkfpfpfefxfpktgyfgbkdpdpdpdpdpfeglfycxgwgdfeglgugufdcxgdgmgahffpghfecxgrfehkdpdpdpdpdpbkiyrovsat'
 
 def test_sign():
-    envelope = import_ssh_object(example_ssh_private_key)
-    if envelope is None:
-        raise ValueError("Failed to import SSH object")
-    signature = sign_data(envelope, b"hello")
-    print(signature)
-
-test_sign()
+    private_key_envelope = import_ssh_object(example_ssh_private_key)
+    if private_key_envelope is None:
+        raise ValueError("Failed to private key envelope")
+    message = b"hello"
+    signature_envelope = sign_data(private_key_envelope, message)
+    public_key_envelope = derive_public_key(private_key_envelope)
+    is_verified = verify_data_signature(signature_envelope, message, public_key_envelope)
+    assert(is_verified)
+    is_verified = verify_data_signature(signature_envelope, b"wrong_message", public_key_envelope)
+    assert(not is_verified)

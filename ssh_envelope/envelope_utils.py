@@ -49,7 +49,7 @@ def export_private_key(envelope: str) -> str:
     cbor = extract_tagged_cbor_subject(envelope)
     tag, value = extract_cbor_tag_and_value(cbor)
     if tag == ssh_private_key_tag:
-        return value.decode()
+        return value
     else:
         raise ValueError("Invalid SSH private key")
 
@@ -57,7 +57,7 @@ def export_public_key(envelope: str) -> str:
     cbor = extract_tagged_cbor_subject(envelope)
     tag, value = extract_cbor_tag_and_value(cbor)
     if tag == ssh_public_key_tag:
-        return value.decode()
+        return value
     else:
         raise ValueError("Invalid SSH public key")
 
@@ -65,7 +65,7 @@ def export_signature(envelope: str) -> str:
     cbor = extract_tagged_cbor_subject(envelope)
     tag, value = extract_cbor_tag_and_value(cbor)
     if tag == ssh_signature_tag:
-        return value.decode()
+        return value
     else:
         raise ValueError("Invalid SSH signature")
 

@@ -2,7 +2,7 @@ import os
 import tempfile
 from typing import Optional
 
-from ssh_envelope.envelope_utils import export_ssh_object
+from ssh_envelope.envelope_utils import export_ssh_object, export_public_key, export_signature
 from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
 from ssh_envelope.ssh_object_utils import import_signature
@@ -38,3 +38,45 @@ def sign_data(private_key_envelope: str, message: bytes, namespace: str = "file"
         finally:
             # Securely delete the temporary private key file
             secure_delete(private_key_file)
+
+def verify_data_signature(signature_envelope: str, message: bytes, public_key_envelope: str, namespace: str = "file") -> bool:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        signature_file = None
+        allowed_signers_file = None
+
+        try:
+            # Extract the SSH signature from the envelope
+            signature = export_signature(signature_envelope)
+
+            # Write the signature to a temporary file
+            signature_file = os.path.join(tmpdir, "signature.sig")
+            with open(signature_file, "w") as f:
+                f.write(signature)
+
+            # Extract the public key from the envelope
+            public_key = export_public_key(public_key_envelope)
+
+            # Extract the key type and base64-encoded key
+            key_parts = public_key.split()
+            key_type = key_parts[0]
+            key_base64 = key_parts[1]
+            identity = key_parts[2] if len(key_parts) > 2 else "identity"
+
+            # Write the public key to a temporary file in the allowed_signers format
+            allowed_signers_file = os.path.join(tmpdir, "allowed_signers")
+            with open(allowed_signers_file, "w") as f:
+
+                # Write the allowed_signers line
+                f.write(f"{identity} {key_type} {key_base64}\n")
+
+            # Run ssh-keygen to verify the signature, passing the message via stdin
+            try:
+                run_command(["ssh-keygen", "-Y", "verify", "-f", allowed_signers_file, "-n", namespace, "-s", signature_file, "-I", identity], stdin=message)
+                return True
+            except:
+                return False
+
+        finally:
+            # Securely delete the temporary files
+            secure_delete(signature_file)
+            secure_delete(allowed_signers_file)

@@ -76,7 +76,7 @@ def public_command(args: argparse.Namespace):
     public_key_envelope = derive_public_key(key)
     sys.stdout.write(public_key_envelope + '\n')
 
-def sign_command(args: argparse.Namespace):
+def sign_data_command(args: argparse.Namespace):
     logger.info(f"Signing data")
 
     if not args.key and not args.key_path and not args.message and not args.message_path:
@@ -140,14 +140,14 @@ def main():
     parser_public.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
     parser_public.set_defaults(func=public_command)
 
-    # sign_command
-    parser_sign = subparsers.add_parser('sign', help='Sign data with a private key')
+    # sign_data_command
+    parser_sign = subparsers.add_parser('sign-data', help='Sign data with a private key')
     parser_sign.add_argument('-k', '--key', help='Private key envelope', default=None)
     parser_sign.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
     parser_sign.add_argument('-m', '--message', help='Message to sign', default=None)
     parser_sign.add_argument('-M', '--message-path', help='Path to the file containing the message to sign', default=None)
     parser_sign.add_argument('-n', '--namespace', help='Namespace for the signature', default='file')
-    parser_sign.set_defaults(func=sign_command)
+    parser_sign.set_defaults(func=sign_data_command)
 
     args = parser.parse_args()
     if hasattr(args, 'func'):
