@@ -2,6 +2,24 @@
 
 pip install -r requirements.txt
 
+## Introduction
+
+```shell
+# Create a subject to sign
+SUBJECT=`envelope subject type string 'Hello, world!'`
+WRAPPED_SUBJECT=`envelope subject type wrapped $SUBJECT`
+
+# Create two signers
+PRIVATE_KEY_1=`ssh_envelope generate`
+PUBLIC_KEY_1=`ssh_envelope public --key $PRIVATE_KEY_1`
+PRIVATE_KEY_2=`ssh_envelope generate`
+PUBLIC_KEY_2=`ssh_envelope public --key $PRIVATE_KEY_2`
+
+# Sign the subject with the two signers
+SIGNED_ENVELOPE=`ssh_envelope add-signature --key $PRIVATE_KEY_1 --envelope $WRAPPED_SUBJECT`
+SIGNED_ENVELOPE=`ssh_envelope add-signature --key $PRIVATE_KEY_2 --envelope $SIGNED_ENVELOPE`
+```
+
 ## Examples
 
 - For input options where the input is provided on the command line, the pattern is (for example) `--key` or `-k`.
