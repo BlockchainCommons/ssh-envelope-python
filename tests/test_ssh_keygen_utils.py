@@ -16,7 +16,7 @@ example_private_key_envelope = 'ur:envelope/tpcstanehnkkadlsdpdpdpdpdpfwfeflgagl
 def test_sign():
     private_key_envelope = import_ssh_object(example_ssh_private_key)
     if private_key_envelope is None:
-        raise ValueError("Failed to private key envelope")
+        raise ValueError("Failed to import private key envelope")
     message = b"hello"
     signature_envelope = sign_data(private_key_envelope, message)
     public_key_envelope = derive_public_key(private_key_envelope)
