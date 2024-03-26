@@ -1,16 +1,17 @@
+from ssh_envelope.envelope import Envelope
 import ssh_envelope.envelope_utils as utils
 import inspect
 
 def test_string_envelope():
     string = "Hello!"
-    envelope = utils.string_envelope(string)
+    envelope = Envelope.from_str(string)
     formatted_envelope = envelope.format
     assert formatted_envelope == '"Hello!"'
 
 def test_wrap_envelope():
     string = "Hello!"
-    envelope = utils.string_envelope(string)
-    wrapped_envelope = utils.wrap_envelope(envelope)
+    envelope = Envelope.from_str(string)
+    wrapped_envelope = envelope.wrapped()
     formatted_envelope = wrapped_envelope.format
     assert formatted_envelope == inspect.cleandoc('''
     {

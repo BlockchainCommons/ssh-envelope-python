@@ -1,4 +1,5 @@
-from ssh_envelope.envelope_utils import known_value_envelope, string_envelope, wrap_envelope
+from ssh_envelope.envelope import Envelope
+from ssh_envelope.envelope_utils import known_value_envelope
 from ssh_envelope.ssh_keygen_utils import sign_message, verify_message
 from ssh_envelope.ssh_object_utils import derive_public_key, generate_ed25519_private, import_ssh_object
 
@@ -25,8 +26,8 @@ def test_sign():
     assert(not is_verified)
 
 def test_wrap_and_sign_envelope():
-    message_envelope = string_envelope("Hello, world!")
-    wrapped_envelope = wrap_envelope(message_envelope)
+    message_envelope = Envelope.from_str("Hello, world!")
+    wrapped_envelope = message_envelope.wrapped()
 
     private_key = generate_ed25519_private()
     digest = wrapped_envelope.digest

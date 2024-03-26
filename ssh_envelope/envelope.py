@@ -34,5 +34,12 @@ class Envelope:
     def format(self):
         return run_command(["envelope", "format", self.ur]).decode().strip()
 
+    @classmethod
+    def from_str(cls, string: str):
+        return cls(run_command(["envelope", "subject", "type", "string", string]).decode().strip())
+
     def add_assertion(self: Self, pred: Self, obj: Self) -> Self:
         return self.__class__(run_command(["envelope", "assertion", "add", "pred-obj", "envelope", pred.ur, "envelope", obj.ur, self.ur]).decode().strip())
+
+    def wrapped(self):
+        return self.__class__(run_command(["envelope", "subject", "type", "wrapped", self.ur]).decode().strip())

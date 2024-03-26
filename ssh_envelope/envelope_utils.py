@@ -10,11 +10,8 @@ ssh_public_key_tag = 40801
 ssh_signature_tag = 40802
 ssh_certificate_tag = 40803
 
-def string_envelope(string: str) -> Envelope:
-    return Envelope(run_command(["envelope", "subject", "type", "string", string]).decode().strip())
-
-def wrap_envelope(envelope: Envelope) -> Envelope:
-    return Envelope(run_command(["envelope", "subject", "type", "wrapped", envelope.ur]).decode().strip())
+# def wrap_envelope(envelope: Envelope) -> Envelope:
+#     return Envelope(run_command(["envelope", "subject", "type", "wrapped", envelope.ur]).decode().strip())
 
 def tagged_string_envelope(tag: int, string: str) -> Envelope:
     hex = tagged_string(tag, string).hex()
