@@ -6,7 +6,6 @@ from cryptography.hazmat.primitives.serialization import load_ssh_private_key
 from cryptography.hazmat.primitives.serialization.ssh import SSHPrivateKeyTypes, SSHPublicKeyTypes;
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from cryptography.hazmat.primitives import serialization
 
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
