@@ -146,7 +146,7 @@ def add_signature_command(args: argparse.Namespace):
 
     key = read_private_key(args)
     envelope = read_envelope(args)
-    signed_envelope = envelope.add_signature(key, "envelope")
+    signed_envelope = envelope.add_signature(key, namespace="envelope")
     sys.stdout.write(signed_envelope.ur + '\n')
 
 
@@ -158,7 +158,7 @@ def verify_signature_command(args: argparse.Namespace):
 
     key = read_public_key(args)
     envelope = read_envelope(args)
-    is_verified = envelope.verify_signature(key)
+    is_verified = envelope.verify_signature(key, namespace="envelope")
     sys.stdout.write(f"{is_verified}\n")
 
 

@@ -1,6 +1,6 @@
 class SSHSignature:
     def __init__(self, pem: str):
-        pem = pem.strip()
+        # pem = pem.strip()
         if not pem.startswith("-----BEGIN SSH SIGNATURE-----"):
             raise ValueError("Not an OpenSSH signature")
         self._pem = pem

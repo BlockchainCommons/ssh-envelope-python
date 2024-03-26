@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "args": [
                 "import",
-                "--file",
+                "--object-path",
                 "objects/test_ed25519_encrypted"
             ]
         },

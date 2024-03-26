@@ -1,6 +1,6 @@
 class SSHPublicKey:
     def __init__(self, value: str):
-        value = value.strip()
+        # value = value.strip()
         if len(value.splitlines()) != 1:
             raise ValueError("Not an OpenSSH public key")
         self._value = value

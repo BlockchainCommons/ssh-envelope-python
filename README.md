@@ -10,7 +10,8 @@ SUBJECT=`envelope subject type string 'Hello, world!'`
 WRAPPED_SUBJECT=`envelope subject type wrapped $SUBJECT`
 
 # Create two signers
-PRIVATE_KEY_1=`ssh_envelope import --object-path objects/test_ed25519_encrypted`
+# PRIVATE_KEY_1=`ssh_envelope import --object-path objects/test_ed25519_encrypted`
+PRIVATE_KEY_1=`ssh_envelope generate`
 PUBLIC_KEY_1=`ssh_envelope public --key $PRIVATE_KEY_1`
 PRIVATE_KEY_2=`ssh_envelope generate`
 PUBLIC_KEY_2=`ssh_envelope public --key $PRIVATE_KEY_2`
@@ -18,6 +19,17 @@ PUBLIC_KEY_2=`ssh_envelope public --key $PRIVATE_KEY_2`
 # Sign the subject with the two signers
 SIGNED_ENVELOPE=`ssh_envelope add-signature --key $PRIVATE_KEY_1 --envelope $WRAPPED_SUBJECT`
 SIGNED_ENVELOPE=`ssh_envelope add-signature --key $PRIVATE_KEY_2 --envelope $SIGNED_ENVELOPE`
+
+# Verify both signatures
+ssh_envelope verify-signature --key $PUBLIC_KEY_1 --envelope $SIGNED_ENVELOPE
+ssh_envelope verify-signature --key $PUBLIC_KEY_2 --envelope $SIGNED_ENVELOPE
+
+# Create an unrelated signer
+PRIVATE_KEY_3=`ssh_envelope generate`
+PUBLIC_KEY_3=`ssh_envelope public --key $PRIVATE_KEY_3`
+
+# Fail to verify the signature with the unrelated signer
+ssh_envelope verify-signature --key $PUBLIC_KEY_3 --envelope $SIGNED_ENVELOPE
 ```
 
 ## Examples
