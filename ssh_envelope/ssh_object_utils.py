@@ -12,7 +12,6 @@ from ssh_envelope.envelope import Envelope
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_signature import SSHSignature
-from ssh_envelope.envelope_utils import export_private_key
 
 from . import logconfig
 __all__ = ['logconfig']
@@ -131,7 +130,7 @@ def derive_public_key(private_key_envelope: Envelope) -> Envelope:
         str: The envelope containing the derived SSH public key.
     """
     # Extract the private key from the envelope
-    private_key_object = export_private_key(private_key_envelope)
+    private_key_object = private_key_envelope.to_ssh_private_key()
 
     # Load the private key object
     private_key = load_ssh_private_key(private_key_object.pem.encode(), password=None, backend=default_backend())

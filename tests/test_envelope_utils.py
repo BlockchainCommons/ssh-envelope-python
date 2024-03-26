@@ -1,5 +1,4 @@
 from ssh_envelope.envelope import Envelope
-import ssh_envelope.envelope_utils as utils
 import inspect
 
 def test_string_envelope():

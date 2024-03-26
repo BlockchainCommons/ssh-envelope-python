@@ -60,13 +60,45 @@ class Envelope:
     def from_ssh_private_key(cls, private_key: SSHPrivateKey):
         return cls.from_tagged_string(ssh_private_key_tag, private_key.pem)
 
+    def to_ssh_private_key(self) -> SSHPrivateKey:
+        tag, value = self.extract_tagged_cbor_subject()
+        if tag == ssh_private_key_tag:
+            return SSHPrivateKey(value)
+        else:
+            raise ValueError("Invalid SSH private key")
+
     @classmethod
     def from_ssh_public_key(cls, public_key: SSHPublicKey):
         return cls.from_tagged_string(ssh_public_key_tag, public_key.value)
 
+    def to_ssh_public_key(self) -> SSHPublicKey:
+        tag, value = self.extract_tagged_cbor_subject()
+        if tag == ssh_public_key_tag:
+            return SSHPublicKey(value)
+        else:
+            raise ValueError("Invalid SSH public key")
+
     @classmethod
     def from_ssh_signature(cls, signature: SSHSignature):
         return cls.from_tagged_string(ssh_signature_tag, signature.pem)
+
+    def to_ssh_signature(self) -> SSHSignature:
+        tag, value = self.extract_tagged_cbor_subject()
+        if tag == ssh_signature_tag:
+            return SSHSignature(value)
+        else:
+            raise ValueError("Invalid SSH signature")
+
+    def to_ssh_object(self) -> SSHPrivateKey | SSHPublicKey | SSHSignature:
+        tag, value = self.extract_tagged_cbor_subject()
+        if tag == ssh_private_key_tag:
+            return SSHPrivateKey(value)
+        elif tag == ssh_public_key_tag:
+            return SSHPublicKey(value)
+        elif tag == ssh_signature_tag:
+            return SSHSignature(value)
+        else:
+            raise ValueError("Invalid SSH object")
 
     def add_assertion(self: Self, pred: Self, obj: Self) -> Self:
         return self.__class__(run_command(["envelope", "assertion", "add", "pred-obj", "envelope", pred.ur, "envelope", obj.ur, self.ur]).decode().strip())

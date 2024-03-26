@@ -8,7 +8,6 @@ __all__ = ['logconfig']
 from ssh_envelope.envelope import Envelope
 from ssh_envelope.ssh_keygen_utils import sign_message
 
-from ssh_envelope.envelope_utils import export_ssh_object
 from ssh_envelope.ssh_object_utils import derive_public_key, generate_ed25519_private, import_ssh_object
 
 logger = logging.getLogger(__name__)
@@ -47,9 +46,7 @@ def export_command(args: argparse.Namespace):
         logger.info("Reading envelope from stdin")
         envelope = Envelope(sys.stdin.read())
 
-    object = export_ssh_object(envelope)
-    if object is None:
-        raise ValueError("Failed to export SSH object")
+    object = envelope.to_ssh_object()
 
     sys.stdout.write(f"{object}" + '\n')
 

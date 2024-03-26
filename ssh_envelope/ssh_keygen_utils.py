@@ -2,7 +2,6 @@ import os
 import tempfile
 
 from ssh_envelope.envelope import Envelope
-from ssh_envelope.envelope_utils import export_private_key, export_ssh_object, export_public_key, export_signature
 from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
 from ssh_envelope.ssh_object_utils import import_signature
@@ -16,7 +15,7 @@ def sign_message(message: bytes, private_key_envelope: Envelope, namespace: str 
 
         try:
             # Export the private key from the envelope
-            private_key: SSHPrivateKey = export_private_key(private_key_envelope)
+            private_key: SSHPrivateKey = private_key_envelope.to_ssh_private_key()
 
             # Write the private key to a temporary file
             private_key_file = os.path.join(tmpdir, "id")
@@ -50,7 +49,7 @@ def verify_message(message: bytes, signature_envelope: Envelope, public_key_enve
 
         try:
             # Extract the SSH signature from the envelope
-            signature = export_signature(signature_envelope)
+            signature = signature_envelope.to_ssh_signature()
 
             # Write the signature to a temporary file
             signature_file = os.path.join(tmpdir, "signature.sig")
@@ -58,7 +57,7 @@ def verify_message(message: bytes, signature_envelope: Envelope, public_key_enve
                 f.write(signature.pem)
 
             # Extract the public key from the envelope
-            public_key = export_public_key(public_key_envelope)
+            public_key = public_key_envelope.to_ssh_public_key()
 
             # Extract the key type and base64-encoded key
             key_type = public_key.type
