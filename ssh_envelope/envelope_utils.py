@@ -10,12 +10,6 @@ ssh_public_key_tag = 40801
 ssh_signature_tag = 40802
 ssh_certificate_tag = 40803
 
-# def known_value_envelope(value: int | str) -> Envelope:
-#     return Envelope(run_command(["envelope", "subject", "type", "known", str(value)]).decode().strip())
-
-def assertion_envelope(pred_type: str, pred_value: int | str, obj_type: str, obj_value: int | str) -> Envelope:
-    return Envelope(run_command(["envelope", "subject", "assertion", pred_type, str(pred_value), obj_type, str(obj_value)]).decode().strip())
-
 def ssh_private_key_envelope(private_key: SSHPrivateKey) -> Envelope:
     return Envelope.from_tagged_string(ssh_private_key_tag, private_key.pem)
 
