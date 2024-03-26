@@ -3,9 +3,10 @@ import argparse
 import sys
 
 from ssh_envelope import logconfig
+__all__ = ['logconfig']
+
 from ssh_envelope.envelope import Envelope
 from ssh_envelope.ssh_keygen_utils import sign_message
-__all__ = ['logconfig']
 
 from ssh_envelope.envelope_utils import export_ssh_object
 from ssh_envelope.ssh_object_utils import derive_public_key, generate_ed25519_private, import_ssh_object
