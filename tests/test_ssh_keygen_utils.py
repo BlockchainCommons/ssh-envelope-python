@@ -1,5 +1,4 @@
 from ssh_envelope.envelope import Envelope
-from ssh_envelope.envelope_utils import known_value_envelope
 from ssh_envelope.ssh_keygen_utils import sign_message, verify_message
 from ssh_envelope.ssh_object_utils import derive_public_key, generate_ed25519_private, import_ssh_object
 
@@ -33,7 +32,7 @@ def test_wrap_and_sign_envelope():
     digest = wrapped_envelope.digest
     signature = sign_message(digest, private_key)
 
-    verified_by = known_value_envelope("verifiedBy")
+    verified_by = Envelope.from_known_value("verifiedBy")
     signed_envelope = wrapped_envelope.add_assertion(verified_by, signature)
     print(signed_envelope.format)
 

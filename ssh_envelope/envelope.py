@@ -44,6 +44,10 @@ class Envelope:
         hex = tagged_string(tag, string).hex()
         return cls(run_command(["envelope", "subject", "type", "cbor", hex]).decode().strip())
 
+    @classmethod
+    def from_known_value(cls, value: int | str):
+        return cls(run_command(["envelope", "subject", "type", "known", str(value)]).decode().strip())
+
     def add_assertion(self: Self, pred: Self, obj: Self) -> Self:
         return self.__class__(run_command(["envelope", "assertion", "add", "pred-obj", "envelope", pred.ur, "envelope", obj.ur, self.ur]).decode().strip())
 

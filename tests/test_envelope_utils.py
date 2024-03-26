@@ -29,8 +29,8 @@ def test_tagged_string_envelope():
     ''')
 
 def test_known_value_envelope():
-    assert utils.known_value_envelope(12345).format == "'12345'"
-    assert utils.known_value_envelope(1).format == "'isA'"
+    assert Envelope.from_known_value(12345).format == "'12345'"
+    assert Envelope.from_known_value(1).format == "'isA'"
 
 def test_assertion_envelope_1():
     assert utils.assertion_envelope("known", 1, "string", "dog").format == inspect.cleandoc('''
