@@ -2,7 +2,7 @@ from typing import Any, TypeVar
 
 from ssh_envelope.cbor_utils import extract_cbor_tag_and_value, tagged_string
 from ssh_envelope.run_command import run_command
-from ssh_envelope.ssh_keygen_utils import sign_message
+from ssh_envelope.ssh_keygen_utils import sign_message, verify_message
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_signature import SSHSignature
@@ -32,6 +32,10 @@ class Envelope:
         return self._ur
 
     @property
+    def format(self):
+        return run_command(["envelope", "format", self.ur]).decode().strip()
+
+    @property
     def digest(self):
         hex = run_command(["envelope", "digest", "--hex", self.ur]).decode()
         return bytes.fromhex(hex)
@@ -41,8 +45,12 @@ class Envelope:
         return self.__class__(run_command(["envelope", "extract", "envelope", self.ur]).decode().strip())
 
     @property
-    def format(self):
-        return run_command(["envelope", "format", self.ur]).decode().strip()
+    def predicate(self):
+        return self.__class__(run_command(["envelope", "extract", "predicate", self.ur]).decode().strip())
+
+    @property
+    def object(self):
+        return self.__class__(run_command(["envelope", "extract", "object", self.ur]).decode().strip())
 
     @classmethod
     def from_string(cls, string: str):
@@ -94,6 +102,12 @@ class Envelope:
         else:
             raise ValueError("Invalid SSH signature")
 
+    def to_maybe_ssh_signature(self) -> SSHSignature | None:
+        try:
+            return self.to_ssh_signature()
+        except ValueError:
+            return None
+
     @classmethod
     def from_ssh_object(cls, ssh_object: SSHPrivateKey | SSHPublicKey | SSHSignature):
         if isinstance(ssh_object, SSHPrivateKey):
@@ -127,5 +141,33 @@ class Envelope:
         return extract_cbor_tag_and_value(bytes.fromhex(hex))
 
     def sign(self: Self, private_key: Self, namespace: str | None = None) -> Self:
-        signature = Envelope.from_ssh_signature(sign_message(self.subject.digest, private_key.to_ssh_private_key(), namespace))
+        # We're going to sign the digest of the envelope's subject, not the whole envelope
+        digest = self.subject.digest
+        # Convert the private key envelope to an SSH private key
+        ssh_private_key = private_key.to_ssh_private_key()
+        # Sign the digest
+        ssh_signature = sign_message(digest, ssh_private_key, namespace)
+        # Convert the SSH signature to an envelope
+        signature = Envelope.from_ssh_signature(ssh_signature)
+        # Add the signature to the envelope
         return self.add_assertion(self.from_known_value("verifiedBy"), signature)
+
+    def verify(self: Self, public_key: Self, namespace: str | None = None) -> bool:
+        # Get the digest of the envelope's subject
+        digest = self.subject.digest
+        # Convert the public key envelope to an SSH public key
+        ssh_public_key = public_key.to_ssh_public_key()
+        # Get every SSH signature on the envelope
+        signatures = self.find_signatures()
+        # Return True if any of the signatures are valid
+        return any(verify_message(digest, signature, ssh_public_key, namespace) for signature in signatures)
+
+    def find_signatures(self) -> list[SSHSignature]:
+        # Get every `verifiedBy` assertion
+        signature_assertion_lines = run_command(["envelope", "assertion", "find", "predicate", "known", "verifiedBy", self.ur]).decode()
+        # Get the object of each `verifiedBy` assertion
+        signature_objects = [self.__class__(line.strip()).object for line in signature_assertion_lines.splitlines()]
+        # Convert each object to an SSH signature, or None if it's not a valid SSH signature
+        maybe_signatures = [signature_object.to_maybe_ssh_signature() for signature_object in signature_objects]
+        # Filter out the None values
+        return [signature for signature in maybe_signatures if signature is not None]

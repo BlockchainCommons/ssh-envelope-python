@@ -28,8 +28,13 @@ def test_wrap_and_sign_envelope():
     message_envelope = Envelope.from_string("Hello, world!")
     wrapped_envelope = message_envelope.wrapped()
 
-    private_key = Envelope.from_ssh_private_key(generate_ed25519_private())
+    ssh_private_key = generate_ed25519_private()
+    private_key = Envelope.from_ssh_private_key(ssh_private_key)
     signed_envelope = wrapped_envelope.sign(private_key)
-    print(signed_envelope.format)
+
+    ssh_public_key = derive_public_key(ssh_private_key)
+    public_key = Envelope.from_ssh_public_key(ssh_public_key)
+    is_verified = signed_envelope.verify(public_key)
+    assert(is_verified)
 
 test_wrap_and_sign_envelope()
