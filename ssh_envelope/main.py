@@ -27,7 +27,7 @@ def import_command(args: argparse.Namespace):
         logger.info("Reading SSH object from stdin")
         object_data = sys.stdin.read()
 
-    envelope = import_ssh_object(object_data)
+    envelope = Envelope.from_ssh_object(import_ssh_object(object_data))
 
     sys.stdout.write(envelope.ur + '\n')
 
@@ -52,7 +52,7 @@ def export_command(args: argparse.Namespace):
 
 def generate_command(args: argparse.Namespace):
     logger.info(f"Generating Ed25519 private key")
-    envelope = generate_ed25519_private()
+    envelope = Envelope.from_ssh_private_key(generate_ed25519_private())
     sys.stdout.write(envelope.ur + '\n')
 
 def public_command(args: argparse.Namespace):
@@ -70,7 +70,7 @@ def public_command(args: argparse.Namespace):
         logger.info("Reading key from stdin")
         key = Envelope(sys.stdin.read())
 
-    public_key_envelope = derive_public_key(key)
+    public_key_envelope = Envelope.from_ssh_public_key(derive_public_key(key.to_ssh_private_key()))
     sys.stdout.write(public_key_envelope.ur + '\n')
 
 def sign_data_command(args: argparse.Namespace):
@@ -82,7 +82,7 @@ def sign_data_command(args: argparse.Namespace):
     key: Envelope | None = None
     if args.key:
         logger.info("Reading key from --key")
-        key = args.key
+        key = Envelope(args.key)
     elif args.key_path:
         logger.info("Reading key from --key-path")
         with open(args.key_path, 'r') as file:
@@ -108,7 +108,7 @@ def sign_data_command(args: argparse.Namespace):
     if not message:
         raise ValueError("Message to sign not provided.")
 
-    signature_envelope = sign_message(message, key, args.namespace)
+    signature_envelope = Envelope.from_ssh_signature(sign_message(message, key.to_ssh_private_key(), args.namespace))
     sys.stdout.write(signature_envelope.ur + '\n')
 
 def main():

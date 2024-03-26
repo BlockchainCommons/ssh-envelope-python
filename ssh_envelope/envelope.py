@@ -2,6 +2,7 @@ from typing import Any, TypeVar
 
 from ssh_envelope.cbor_utils import extract_cbor_tag_and_value, tagged_string
 from ssh_envelope.run_command import run_command
+from ssh_envelope.ssh_keygen_utils import sign_message
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_signature import SSHSignature
@@ -34,6 +35,10 @@ class Envelope:
     def digest(self):
         hex = run_command(["envelope", "digest", "--hex", self.ur]).decode()
         return bytes.fromhex(hex)
+
+    @property
+    def subject(self):
+        return self.__class__(run_command(["envelope", "extract", "envelope", self.ur]).decode().strip())
 
     @property
     def format(self):
@@ -89,6 +94,17 @@ class Envelope:
         else:
             raise ValueError("Invalid SSH signature")
 
+    @classmethod
+    def from_ssh_object(cls, ssh_object: SSHPrivateKey | SSHPublicKey | SSHSignature):
+        if isinstance(ssh_object, SSHPrivateKey):
+            return cls.from_ssh_private_key(ssh_object)
+        elif isinstance(ssh_object, SSHPublicKey):
+            return cls.from_ssh_public_key(ssh_object)
+        elif isinstance(ssh_object, SSHSignature):
+            return cls.from_ssh_signature(ssh_object)
+        else:
+            raise ValueError("Invalid SSH object")
+
     def to_ssh_object(self) -> SSHPrivateKey | SSHPublicKey | SSHSignature:
         tag, value = self.extract_tagged_cbor_subject()
         if tag == ssh_private_key_tag:
@@ -109,3 +125,7 @@ class Envelope:
     def extract_tagged_cbor_subject(self) -> tuple[int, Any]:
         hex = run_command(["envelope", "extract", "cbor", self.ur]).decode()
         return extract_cbor_tag_and_value(bytes.fromhex(hex))
+
+    def sign(self: Self, private_key: Self, namespace: str | None = None) -> Self:
+        signature = Envelope.from_ssh_signature(sign_message(self.subject.digest, private_key.to_ssh_private_key(), namespace))
+        return self.add_assertion(self.from_known_value("verifiedBy"), signature)

@@ -1,22 +1,19 @@
 import os
 import tempfile
 
-from ssh_envelope.envelope import Envelope
 from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
-from ssh_envelope.ssh_object_utils import import_signature
 from ssh_envelope.ssh_private_key import SSHPrivateKey
+from ssh_envelope.ssh_public_key import SSHPublicKey
+from ssh_envelope.ssh_signature import SSHSignature
 
 default_namespace = "file"
 
-def sign_message(message: bytes, private_key_envelope: Envelope, namespace: str | None = None) -> Envelope:
+def sign_message(message: bytes, private_key: SSHPrivateKey, namespace: str | None = None) -> SSHSignature:
     with tempfile.TemporaryDirectory() as tmpdir:
         private_key_file = None
 
         try:
-            # Export the private key from the envelope
-            private_key: SSHPrivateKey = private_key_envelope.to_ssh_private_key()
-
             # Write the private key to a temporary file
             private_key_file = os.path.join(tmpdir, "id")
             with open(private_key_file, "w") as f:
@@ -28,12 +25,7 @@ def sign_message(message: bytes, private_key_envelope: Envelope, namespace: str 
             # Run ssh-keygen to sign the message, passing the message via stdin
             namespace = namespace or default_namespace
             signature = run_command(["ssh-keygen", "-Y", "sign", "-f", private_key_file, "-n", namespace], stdin=message)
-
-            # Import the signature into an envelope
-            envelope = import_signature(signature.decode())
-            if envelope is None:
-                raise ValueError("Failed to import signature")
-            return envelope
+            return SSHSignature(signature.decode())
 
         except Exception as e:
             raise Exception(f"Failed to sign data: {str(e)}") from e
@@ -42,22 +34,16 @@ def sign_message(message: bytes, private_key_envelope: Envelope, namespace: str 
             # Securely delete the temporary private key file
             secure_delete(private_key_file)
 
-def verify_message(message: bytes, signature_envelope: Envelope, public_key_envelope: Envelope, namespace: str | None = None) -> bool:
+def verify_message(message: bytes, signature: SSHSignature, public_key: SSHPublicKey, namespace: str | None = None) -> bool:
     with tempfile.TemporaryDirectory() as tmpdir:
         signature_file = None
         allowed_signers_file = None
 
         try:
-            # Extract the SSH signature from the envelope
-            signature = signature_envelope.to_ssh_signature()
-
             # Write the signature to a temporary file
             signature_file = os.path.join(tmpdir, "signature.sig")
             with open(signature_file, "w") as f:
                 f.write(signature.pem)
-
-            # Extract the public key from the envelope
-            public_key = public_key_envelope.to_ssh_public_key()
 
             # Extract the key type and base64-encoded key
             key_type = public_key.type
@@ -81,6 +67,3 @@ def verify_message(message: bytes, signature_envelope: Envelope, public_key_enve
             # Securely delete the temporary files
             secure_delete(signature_file)
             secure_delete(allowed_signers_file)
-
-def sign_envelope_digest(envelope: Envelope, private_key_envelope: Envelope, namespace: str | None = None) -> Envelope:
-    return sign_message(envelope.digest, private_key_envelope, namespace)

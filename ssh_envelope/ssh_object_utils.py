@@ -8,7 +8,6 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 
-from ssh_envelope.envelope import Envelope
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_signature import SSHSignature
@@ -18,28 +17,26 @@ __all__ = ['logconfig']
 
 logger = logging.getLogger(__name__)
 
-def import_ssh_object(string: str) -> Envelope:
+def import_ssh_object(string: str) -> SSHPrivateKey | SSHPublicKey | SSHSignature:
     import_functions = [import_signature, import_public_key, import_private_key]
 
     for import_func in import_functions:
         try:
-            object_envelope = import_func(string)
-            return object_envelope
+            object = import_func(string)
+            return object
         except Exception:
             pass
 
     raise ValueError("Failed to import SSH object")
 
-def import_signature(string: str) -> Envelope:
-    signature = SSHSignature(string)
-    return Envelope.from_ssh_signature(signature)
+def import_signature(string: str) -> SSHSignature:
+    return SSHSignature(string)
 
-def import_public_key(string: str) -> Envelope:
+def import_public_key(string: str) -> SSHPublicKey:
     public_key = serialization.load_ssh_public_key(string.encode(), backend=default_backend())
-    pem_key = SSHPublicKey(serialize_public_key(public_key))
-    return Envelope.from_ssh_public_key(pem_key)
+    return SSHPublicKey(serialize_public_key(public_key))
 
-def import_private_key(string: str) -> Envelope:
+def import_private_key(string: str) -> SSHPrivateKey:
     input_data = string.encode()
     max_attempts = 3
     for attempt in range(1, max_attempts + 1):
@@ -48,15 +45,13 @@ def import_private_key(string: str) -> Envelope:
                 logger.info("Attempting to load SSH key without password")
                 private_key = load_private_key(input_data)
                 logger.info("SSH key loaded successfully without password")
-                pem_key = SSHPrivateKey(serialize_private_key(private_key))
-                return Envelope.from_ssh_private_key(pem_key)
+                return SSHPrivateKey(serialize_private_key(private_key))
             else:
                 logger.info(f"Attempt {attempt}/{max_attempts}: Prompting for password")
                 password = getpass("Enter the password for the SSH key: ").encode()
                 private_key = load_private_key(input_data, password=password)
                 logger.info("SSH key loaded successfully with password")
-                pem_key = SSHPrivateKey(serialize_private_key(private_key))
-                return Envelope.from_ssh_private_key(pem_key)
+                return SSHPrivateKey(serialize_private_key(private_key))
         except ValueError as e:
             if "SSH key is password-protected." in str(e):
                 logger.info("SSH key is password-protected, prompting for password")
@@ -96,13 +91,7 @@ def serialize_public_key(public_key: SSHPublicKeyTypes) -> str:
     )
     return pem.decode()
 
-def generate_ed25519_private() -> Envelope:
-    """
-    Generates a new Ed25519 private key, serializes it to OpenSSH format, and encapsulates it in a Gordian envelope.
-
-    Returns:
-        str: The Gordian envelope containing the serialized Ed25519 private key.
-    """
+def generate_ed25519_private() -> SSHPrivateKey:
     # Generate a new Ed25519 private key
     private_key = Ed25519PrivateKey.generate()
 
@@ -113,26 +102,10 @@ def generate_ed25519_private() -> Envelope:
         encryption_algorithm=serialization.NoEncryption()
     ).decode('utf-8')
 
-    # Encapsulate the serialized private key in a Gordian envelope
-    envelope = Envelope.from_ssh_private_key(SSHPrivateKey(ssh_private_key))
+    return SSHPrivateKey(ssh_private_key)
 
-    return envelope
-
-def derive_public_key(private_key_envelope: Envelope) -> Envelope:
-    """
-    Extracts the SSH private key from the given envelope, derives the corresponding
-    public key, serializes it to OpenSSH format, and encapsulates it in a new envelope.
-
-    Args:
-        private_key_envelope (str): The envelope containing the SSH private key.
-
-    Returns:
-        str: The envelope containing the derived SSH public key.
-    """
-    # Extract the private key from the envelope
-    private_key_object = private_key_envelope.to_ssh_private_key()
-
-    # Load the private key object
+def derive_public_key(private_key_object: SSHPrivateKey) -> SSHPublicKey:
+    # Load the private key
     private_key = load_ssh_private_key(private_key_object.pem.encode(), password=None, backend=default_backend())
 
     # Derive the public key
@@ -144,7 +117,4 @@ def derive_public_key(private_key_envelope: Envelope) -> Envelope:
         format=serialization.PublicFormat.OpenSSH
     ).decode('utf-8')
 
-    # Encapsulate the serialized public key in a new envelope
-    public_key_envelope = Envelope.from_ssh_public_key(SSHPublicKey(ssh_public_key))
-
-    return public_key_envelope
+    return SSHPublicKey(ssh_public_key)
