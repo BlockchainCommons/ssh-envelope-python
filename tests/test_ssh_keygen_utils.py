@@ -1,4 +1,4 @@
-from ssh_envelope.ssh_keygen_utils import sign_data, verify_data_signature
+from ssh_envelope.ssh_keygen_utils import sign_message, verify_message
 from ssh_envelope.ssh_object_utils import derive_public_key, import_ssh_object
 
 example_ssh_private_key = '''
@@ -16,9 +16,9 @@ example_private_key_envelope = 'ur:envelope/tpcstanehnkkadlsdpdpdpdpdpfwfeflgagl
 def test_sign():
     private_key_envelope = import_ssh_object(example_ssh_private_key)
     message = b"hello"
-    signature_envelope = sign_data(private_key_envelope, message)
+    signature_envelope = sign_message(message, private_key_envelope)
     public_key_envelope = derive_public_key(private_key_envelope)
-    is_verified = verify_data_signature(signature_envelope, message, public_key_envelope)
+    is_verified = verify_message(message, signature_envelope, public_key_envelope)
     assert(is_verified)
-    is_verified = verify_data_signature(signature_envelope, b"wrong_message", public_key_envelope)
+    is_verified = verify_message(b"wrong_message", signature_envelope, public_key_envelope)
     assert(not is_verified)

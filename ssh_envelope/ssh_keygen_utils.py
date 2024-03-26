@@ -7,7 +7,7 @@ from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
 from ssh_envelope.ssh_object_utils import import_signature
 
-def sign_data(private_key_envelope: str, message: bytes, namespace: str = "file") -> str:
+def sign_message(message: bytes, private_key_envelope: str, namespace: str = "file") -> str:
     with tempfile.TemporaryDirectory() as tmpdir:
         private_key_file = None
 
@@ -39,7 +39,7 @@ def sign_data(private_key_envelope: str, message: bytes, namespace: str = "file"
             # Securely delete the temporary private key file
             secure_delete(private_key_file)
 
-def verify_data_signature(signature_envelope: str, message: bytes, public_key_envelope: str, namespace: str = "file") -> bool:
+def verify_message(message: bytes, signature_envelope: str, public_key_envelope: str, namespace: str = "file") -> bool:
     with tempfile.TemporaryDirectory() as tmpdir:
         signature_file = None
         allowed_signers_file = None

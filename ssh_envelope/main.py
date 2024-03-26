@@ -3,7 +3,7 @@ import argparse
 import sys
 
 from ssh_envelope import logconfig
-from ssh_envelope.ssh_keygen_utils import sign_data
+from ssh_envelope.ssh_keygen_utils import sign_message
 __all__ = ['logconfig']
 
 from ssh_envelope.envelope_utils import export_ssh_object
@@ -109,7 +109,7 @@ def sign_data_command(args: argparse.Namespace):
     if not message:
         raise ValueError("Message to sign not provided.")
 
-    signature_envelope = sign_data(key, message, args.namespace)
+    signature_envelope = sign_message(message, key, args.namespace)
     sys.stdout.write(signature_envelope + '\n')
 
 def main():
