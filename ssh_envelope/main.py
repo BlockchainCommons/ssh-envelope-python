@@ -51,7 +51,7 @@ def export_command(args: argparse.Namespace):
     if object is None:
         raise ValueError("Failed to export SSH object")
 
-    sys.stdout.write(object + '\n')
+    sys.stdout.write(f"{object}" + '\n')
 
 def generate_command(args: argparse.Namespace):
     logger.info(f"Generating Ed25519 private key")

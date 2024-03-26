@@ -3,10 +3,11 @@ import tempfile
 from typing import Optional
 
 from ssh_envelope.envelope import Envelope
-from ssh_envelope.envelope_utils import envelope_digest, export_ssh_object, export_public_key, export_signature
+from ssh_envelope.envelope_utils import envelope_digest, export_private_key, export_ssh_object, export_public_key, export_signature
 from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
 from ssh_envelope.ssh_object_utils import import_signature
+from ssh_envelope.ssh_private_key import SSHPrivateKey
 
 default_namespace = "file"
 
@@ -16,12 +17,12 @@ def sign_message(message: bytes, private_key_envelope: Envelope, namespace: str 
 
         try:
             # Export the private key from the envelope
-            private_key = export_ssh_object(private_key_envelope)
+            private_key: SSHPrivateKey = export_private_key(private_key_envelope)
 
             # Write the private key to a temporary file
             private_key_file = os.path.join(tmpdir, "id")
             with open(private_key_file, "w") as f:
-                f.write(private_key)
+                f.write(private_key.pem)
 
             # Set appropriate permissions on the private key file
             os.chmod(private_key_file, 0o600)
@@ -31,7 +32,7 @@ def sign_message(message: bytes, private_key_envelope: Envelope, namespace: str 
             signature = run_command(["ssh-keygen", "-Y", "sign", "-f", private_key_file, "-n", namespace], stdin=message)
 
             # Import the signature into an envelope
-            envelope = import_signature(signature)
+            envelope = import_signature(signature.decode())
             if envelope is None:
                 raise ValueError("Failed to import signature")
             return envelope
@@ -55,23 +56,20 @@ def verify_message(message: bytes, signature_envelope: Envelope, public_key_enve
             # Write the signature to a temporary file
             signature_file = os.path.join(tmpdir, "signature.sig")
             with open(signature_file, "w") as f:
-                f.write(signature)
+                f.write(signature.pem)
 
             # Extract the public key from the envelope
             public_key = export_public_key(public_key_envelope)
 
             # Extract the key type and base64-encoded key
-            key_parts = public_key.split()
-            key_type = key_parts[0]
-            key_base64 = key_parts[1]
-            identity = key_parts[2] if len(key_parts) > 2 else "identity"
+            key_type = public_key.type
+            key_base64 = public_key.base64
+            identity = public_key.identity or "identity"
             namespace = namespace or default_namespace
 
             # Write the public key to a temporary file in the allowed_signers format
             allowed_signers_file = os.path.join(tmpdir, "allowed_signers")
             with open(allowed_signers_file, "w") as f:
-
-                # Write the allowed_signers line
                 f.write(f"{identity} {key_type} {key_base64}\n")
 
             # Run ssh-keygen to verify the signature, passing the message via stdin
