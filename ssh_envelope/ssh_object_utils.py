@@ -1,5 +1,4 @@
 import logging
-import sys
 from getpass import getpass
 
 from cryptography.hazmat.primitives import serialization

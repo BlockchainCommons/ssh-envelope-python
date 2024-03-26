@@ -1,8 +1,6 @@
 import ssh_envelope.envelope_utils as utils
 import inspect
 
-from ssh_envelope.ssh_private_key import SSHPrivateKey
-
 def test_string_envelope():
     string = "Hello!"
     envelope = utils.string_envelope(string)
@@ -33,7 +31,12 @@ def test_known_value_envelope():
     assert utils.format_envelope(utils.known_value_envelope(12345)) == "'12345'"
     assert utils.format_envelope(utils.known_value_envelope(1)) == "'isA'"
 
-def test_assertion_envelope():
+def test_assertion_envelope_1():
     assert utils.format_envelope(utils.assertion_envelope("known", 1, "string", "dog")) == inspect.cleandoc('''
     'isA': "dog"
+    ''')
+
+def test_assertion_envelope_2():
+    assert utils.format_envelope(utils.assertion_envelope("known", "verifiedBy", "string", "Signature")) == inspect.cleandoc('''
+    'verifiedBy': "Signature"
     ''')

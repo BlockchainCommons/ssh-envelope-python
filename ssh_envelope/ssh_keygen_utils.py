@@ -1,9 +1,8 @@
 import os
 import tempfile
-from typing import Optional
 
 from ssh_envelope.envelope import Envelope
-from ssh_envelope.envelope_utils import envelope_digest, export_private_key, export_ssh_object, export_public_key, export_signature
+from ssh_envelope.envelope_utils import export_private_key, export_ssh_object, export_public_key, export_signature
 from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
 from ssh_envelope.ssh_object_utils import import_signature
@@ -85,5 +84,4 @@ def verify_message(message: bytes, signature_envelope: Envelope, public_key_enve
             secure_delete(allowed_signers_file)
 
 def sign_envelope_digest(envelope: Envelope, private_key_envelope: Envelope, namespace: str | None = None) -> Envelope:
-    digest = envelope_digest(envelope)
-    return sign_message(digest, private_key_envelope, namespace)
+    return sign_message(envelope.digest, private_key_envelope, namespace)

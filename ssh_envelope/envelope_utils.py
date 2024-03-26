@@ -29,9 +29,6 @@ def known_value_envelope(value: int | str) -> Envelope:
 def assertion_envelope(pred_type: str, pred_value: int | str, obj_type: str, obj_value: int | str) -> Envelope:
     return Envelope(run_command(["envelope", "subject", "assertion", pred_type, str(pred_value), obj_type, str(obj_value)]).decode().strip())
 
-def verified_by_assertion_envelope(signature_cbor_hex: str) -> Envelope:
-    return assertion_envelope("known", "verifiedBy", "cbor", signature_cbor_hex)
-
 def ssh_private_key_envelope(private_key: SSHPrivateKey) -> Envelope:
     return tagged_string_envelope(ssh_private_key_tag, private_key.pem)
 
@@ -43,10 +40,6 @@ def ssh_signature_envelope(signature: SSHSignature) -> Envelope:
 
 def extract_tagged_cbor_subject(envelope: Envelope) -> bytes:
     hex = run_command(["envelope", "extract", "cbor", envelope.ur]).decode()
-    return bytes.fromhex(hex)
-
-def envelope_digest(envelope: Envelope) -> bytes:
-    hex = run_command(["envelope", "digest", "--hex", envelope.ur]).decode()
     return bytes.fromhex(hex)
 
 def export_private_key(envelope: Envelope) -> SSHPrivateKey:
