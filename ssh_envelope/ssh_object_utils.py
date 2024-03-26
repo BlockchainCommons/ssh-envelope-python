@@ -18,14 +18,16 @@ from .envelope_utils import ssh_private_key_envelope, ssh_public_key_envelope, s
 
 logger = logging.getLogger(__name__)
 
-def import_ssh_object(string: str) -> str | None:
+def import_ssh_object(string: str) -> str:
     input_data = string.encode()
-    object = import_signature(input_data)
-    if object is None:
-        object = import_public_key(input_data)
-    if object is None:
-        object = import_private_key(input_data)
-    return object
+    object_envelope = import_signature(input_data)
+    if object_envelope is None:
+        object_envelope = import_public_key(input_data)
+    if object_envelope is None:
+        object_envelope = import_private_key(input_data)
+    if object_envelope is None:
+        raise ValueError("Failed to import SSH object")
+    return object_envelope
 
 def import_signature(input_data: bytes) -> str | None:
     if b"BEGIN SSH SIGNATURE" in input_data:

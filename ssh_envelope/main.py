@@ -27,8 +27,6 @@ def import_command(args: argparse.Namespace):
         object_data = sys.stdin.read()
 
     envelope = import_ssh_object(object_data)
-    if envelope is None:
-        raise ValueError("Failed to import SSH object")
 
     sys.stdout.write(envelope + '\n')
 
