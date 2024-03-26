@@ -29,7 +29,8 @@ def test_wrap_and_sign_envelope():
     wrapped_envelope = wrap_envelope(message_envelope)
 
     private_key = generate_ed25519_private()
-    signature = sign_message(wrapped_envelope.digest, private_key)
+    digest = wrapped_envelope.digest
+    signature = sign_message(digest, private_key)
 
     verified_by = known_value_envelope("verifiedBy")
     signed_envelope = wrapped_envelope.add_assertion(verified_by, signature)

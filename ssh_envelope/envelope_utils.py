@@ -10,9 +10,6 @@ ssh_public_key_tag = 40801
 ssh_signature_tag = 40802
 ssh_certificate_tag = 40803
 
-def format_envelope(envelope: Envelope) -> str:
-    return run_command(["envelope", "format", envelope.ur]).decode().strip()
-
 def string_envelope(string: str) -> Envelope:
     return Envelope(run_command(["envelope", "subject", "type", "string", string]).decode().strip())
 
