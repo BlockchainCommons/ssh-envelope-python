@@ -41,6 +41,10 @@ def extract_tagged_cbor_subject(envelope: str) -> bytes:
     hex = run_command(["envelope", "extract", "cbor", envelope]).decode()
     return bytes.fromhex(hex)
 
+def envelope_digest(envelope: str) -> bytes:
+    hex = run_command(["envelope", "digest", "--hex", envelope]).decode()
+    return bytes.fromhex(hex)
+
 def export_private_key(envelope: str) -> str:
     cbor = extract_tagged_cbor_subject(envelope)
     tag, value = extract_cbor_tag_and_value(cbor)

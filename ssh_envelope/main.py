@@ -61,38 +61,38 @@ def generate_command(args: argparse.Namespace):
 def public_command(args: argparse.Namespace):
     logger.info(f"Deriving public key from private key")
 
-    envelope = None
-    if args.envelope:
-        logger.info("Reading envelope from --envelope")
-        envelope = args.envelope
-    elif args.envelope_path:
-        logger.info("Reading envelope from --envelope-path")
-        with open(args.envelope_path, 'r') as file:
-            envelope = file.read()
+    key = None
+    if args.key:
+        logger.info("Reading key from --key")
+        key = args.key
+    elif args.key_path:
+        logger.info("Reading key from --key-path")
+        with open(args.key_path, 'r') as file:
+            key = file.read()
     else:
-        logger.info("Reading envelope from stdin")
-        envelope = sys.stdin.read()
+        logger.info("Reading key from stdin")
+        key = sys.stdin.read()
 
-    public_key_envelope = derive_public_key(envelope)
+    public_key_envelope = derive_public_key(key)
     sys.stdout.write(public_key_envelope + '\n')
 
 def sign_command(args: argparse.Namespace):
     logger.info(f"Signing data")
 
-    if not args.envelope and not args.envelope_path and not args.message and not args.message_path:
-        raise ValueError("At least one of the key envelope (--envelope or --envelope-path) or the message to be signed (--message or --message-path) must be provided on the command line: they cannot both be provided via stdin.")
+    if not args.key and not args.key_path and not args.message and not args.message_path:
+        raise ValueError("At least one of the key envelope (--key or --key-path) or the message to be signed (--message or --message-path) must be provided on the command line: they cannot both be provided via stdin.")
 
-    envelope = None
-    if args.envelope:
-        logger.info("Reading envelope from --envelope")
-        envelope = args.envelope
-    elif args.envelope_path:
-        logger.info("Reading envelope from --envelope-path")
-        with open(args.envelope_path, 'r') as file:
-            envelope = file.read()
+    key = None
+    if args.key:
+        logger.info("Reading key from --key")
+        key = args.key
+    elif args.key_path:
+        logger.info("Reading key from --key-path")
+        with open(args.key_path, 'r') as file:
+            key = file.read()
     elif not args.message and not args.message_path:
-        logger.info("Reading envelope from stdin")
-        envelope = sys.stdin.read()
+        logger.info("Reading key from stdin")
+        key = sys.stdin.read()
 
     message = None
     if args.message:
@@ -102,16 +102,16 @@ def sign_command(args: argparse.Namespace):
         logger.info("Reading message from --message-path")
         with open(args.message_path, 'rb') as file:
             message = file.read()
-    elif not envelope:
+    elif not key:
         logger.info("Reading message from stdin")
         message = sys.stdin.buffer.read()
 
-    if not envelope:
+    if not key:
         raise ValueError("Key envelope not provided.")
     if not message:
         raise ValueError("Message to sign not provided.")
 
-    signature_envelope = sign_data(envelope, message, args.namespace)
+    signature_envelope = sign_data(key, message, args.namespace)
     sys.stdout.write(signature_envelope + '\n')
 
 def main():
@@ -120,14 +120,14 @@ def main():
 
     # import_command
     parser_import = subparsers.add_parser('import', help='Convert an SSH object to an envelope')
-    parser_import.add_argument('--object', help='SSH object as a string', default=None)
-    parser_import.add_argument('--object-path', help='Path to the file containing the SSH object', default=None)
+    parser_import.add_argument('-o', '--object', help='SSH object as a string', default=None)
+    parser_import.add_argument('-O', '--object-path', help='Path to the file containing the SSH object', default=None)
     parser_import.set_defaults(func=import_command)
 
     # export_command
     parser_export = subparsers.add_parser('export', help='Convert an envelope to an SSH object')
-    parser_export.add_argument('--envelope', help='Envelope to export', default=None)
-    parser_export.add_argument('--envelope-path', help='Path to the file containing the envelope', default=None)
+    parser_export.add_argument('-e', '--envelope', help='Envelope to export', default=None)
+    parser_export.add_argument('-E', '--envelope-path', help='Path to the file containing the envelope', default=None)
     parser_export.set_defaults(func=export_command)
 
     # generate_command
@@ -136,17 +136,17 @@ def main():
 
     # public_command
     parser_public = subparsers.add_parser('public', help='Derive a public key from a private key')
-    parser_public.add_argument('--envelope', help='Private key envelope', default=None)
-    parser_public.add_argument('--envelope-path', help='Path to the file containing the private key envelope', default=None)
+    parser_public.add_argument('-k', '--key', help='Private key envelope', default=None)
+    parser_public.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
     parser_public.set_defaults(func=public_command)
 
     # sign_command
     parser_sign = subparsers.add_parser('sign', help='Sign data with a private key')
-    parser_sign.add_argument('--envelope', help='Private key envelope', default=None)
-    parser_sign.add_argument('--envelope-path', help='Path to the file containing the private key envelope', default=None)
-    parser_sign.add_argument('--message', help='Message to sign', default=None)
-    parser_sign.add_argument('--message-path', help='Path to the file containing the message to sign', default=None)
-    parser_sign.add_argument('--namespace', help='Namespace for the signature', default='file')
+    parser_sign.add_argument('-k', '--key', help='Private key envelope', default=None)
+    parser_sign.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
+    parser_sign.add_argument('-m', '--message', help='Message to sign', default=None)
+    parser_sign.add_argument('-M', '--message-path', help='Path to the file containing the message to sign', default=None)
+    parser_sign.add_argument('-n', '--namespace', help='Namespace for the signature', default='file')
     parser_sign.set_defaults(func=sign_command)
 
     args = parser.parse_args()
