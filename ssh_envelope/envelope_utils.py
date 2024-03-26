@@ -10,12 +10,9 @@ ssh_public_key_tag = 40801
 ssh_signature_tag = 40802
 ssh_certificate_tag = 40803
 
-# def wrap_envelope(envelope: Envelope) -> Envelope:
-#     return Envelope(run_command(["envelope", "subject", "type", "wrapped", envelope.ur]).decode().strip())
-
-def tagged_string_envelope(tag: int, string: str) -> Envelope:
-    hex = tagged_string(tag, string).hex()
-    return Envelope(run_command(["envelope", "subject", "type", "cbor", hex]).decode().strip())
+# def tagged_string_envelope(tag: int, string: str) -> Envelope:
+#     hex = tagged_string(tag, string).hex()
+#     return Envelope(run_command(["envelope", "subject", "type", "cbor", hex]).decode().strip())
 
 def known_value_envelope(value: int | str) -> Envelope:
     return Envelope(run_command(["envelope", "subject", "type", "known", str(value)]).decode().strip())
@@ -24,13 +21,13 @@ def assertion_envelope(pred_type: str, pred_value: int | str, obj_type: str, obj
     return Envelope(run_command(["envelope", "subject", "assertion", pred_type, str(pred_value), obj_type, str(obj_value)]).decode().strip())
 
 def ssh_private_key_envelope(private_key: SSHPrivateKey) -> Envelope:
-    return tagged_string_envelope(ssh_private_key_tag, private_key.pem)
+    return Envelope.from_tagged_string(ssh_private_key_tag, private_key.pem)
 
 def ssh_public_key_envelope(public_key: SSHPublicKey) -> Envelope:
-    return tagged_string_envelope(ssh_public_key_tag, public_key.value)
+    return Envelope.from_tagged_string(ssh_public_key_tag, public_key.value)
 
 def ssh_signature_envelope(signature: SSHSignature) -> Envelope:
-    return tagged_string_envelope(ssh_signature_tag, signature.pem)
+    return Envelope.from_tagged_string(ssh_signature_tag, signature.pem)
 
 def extract_tagged_cbor_subject(envelope: Envelope) -> bytes:
     hex = run_command(["envelope", "extract", "cbor", envelope.ur]).decode()

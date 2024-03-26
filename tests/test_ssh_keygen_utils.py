@@ -26,7 +26,7 @@ def test_sign():
     assert(not is_verified)
 
 def test_wrap_and_sign_envelope():
-    message_envelope = Envelope.from_str("Hello, world!")
+    message_envelope = Envelope.from_string("Hello, world!")
     wrapped_envelope = message_envelope.wrapped()
 
     private_key = generate_ed25519_private()

@@ -4,13 +4,13 @@ import inspect
 
 def test_string_envelope():
     string = "Hello!"
-    envelope = Envelope.from_str(string)
+    envelope = Envelope.from_string(string)
     formatted_envelope = envelope.format
     assert formatted_envelope == '"Hello!"'
 
 def test_wrap_envelope():
     string = "Hello!"
-    envelope = Envelope.from_str(string)
+    envelope = Envelope.from_string(string)
     wrapped_envelope = envelope.wrapped()
     formatted_envelope = wrapped_envelope.format
     assert formatted_envelope == inspect.cleandoc('''
@@ -22,7 +22,7 @@ def test_wrap_envelope():
 def test_tagged_string_envelope():
     string = "Hello!"
     tag = 42
-    envelope = utils.tagged_string_envelope(tag, string)
+    envelope = Envelope.from_tagged_string(tag, string)
     formatted_envelope = envelope.format
     assert formatted_envelope == inspect.cleandoc('''
     42("Hello!")

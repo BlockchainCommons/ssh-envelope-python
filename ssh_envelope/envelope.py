@@ -1,5 +1,6 @@
 from typing import TypeVar
 
+from ssh_envelope.cbor_utils import tagged_string
 from ssh_envelope.run_command import run_command
 
 Self = TypeVar('Self', bound='Envelope')
@@ -35,8 +36,13 @@ class Envelope:
         return run_command(["envelope", "format", self.ur]).decode().strip()
 
     @classmethod
-    def from_str(cls, string: str):
+    def from_string(cls, string: str):
         return cls(run_command(["envelope", "subject", "type", "string", string]).decode().strip())
+
+    @classmethod
+    def from_tagged_string(cls, tag: int, string: str):
+        hex = tagged_string(tag, string).hex()
+        return cls(run_command(["envelope", "subject", "type", "cbor", hex]).decode().strip())
 
     def add_assertion(self: Self, pred: Self, obj: Self) -> Self:
         return self.__class__(run_command(["envelope", "assertion", "add", "pred-obj", "envelope", pred.ur, "envelope", obj.ur, self.ur]).decode().strip())
