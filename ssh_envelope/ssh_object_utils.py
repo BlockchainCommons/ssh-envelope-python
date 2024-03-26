@@ -9,6 +9,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 
+from ssh_envelope.envelope import Envelope
+
 from .envelope_utils import export_private_key, ssh_private_key_envelope, ssh_public_key_envelope
 
 from . import logconfig
@@ -18,7 +20,7 @@ from .envelope_utils import ssh_private_key_envelope, ssh_public_key_envelope, s
 
 logger = logging.getLogger(__name__)
 
-def import_ssh_object(string: str) -> str:
+def import_ssh_object(string: str) -> Envelope:
     input_data = string.encode()
     object_envelope = import_signature(input_data)
     if object_envelope is None:
@@ -29,14 +31,14 @@ def import_ssh_object(string: str) -> str:
         raise ValueError("Failed to import SSH object")
     return object_envelope
 
-def import_signature(input_data: bytes) -> str | None:
+def import_signature(input_data: bytes) -> Envelope | None:
     if b"BEGIN SSH SIGNATURE" in input_data:
         envelope = ssh_signature_envelope(input_data.decode())
         return envelope
     else:
         return None
 
-def import_public_key(input_data: bytes) -> str | None:
+def import_public_key(input_data: bytes) -> Envelope | None:
     try:
         public_key = serialization.load_ssh_public_key(input_data, backend=default_backend())
         pem_key = serialize_public_key(public_key)
@@ -45,7 +47,7 @@ def import_public_key(input_data: bytes) -> str | None:
     except:
         return None
 
-def import_private_key(input_data: bytes) -> str | None:
+def import_private_key(input_data: bytes) -> Envelope | None:
     try:
         max_attempts = 3
         for attempt in range(1, max_attempts + 1):
@@ -106,7 +108,7 @@ def serialize_public_key(public_key: SSHPublicKeyTypes) -> str:
     )
     return pem.decode()
 
-def generate_ed25519_private() -> str:
+def generate_ed25519_private() -> Envelope:
     """
     Generates a new Ed25519 private key, serializes it to OpenSSH format, and encapsulates it in a Gordian envelope.
 
@@ -128,7 +130,7 @@ def generate_ed25519_private() -> str:
 
     return envelope
 
-def derive_public_key(private_key_envelope: str) -> str:
+def derive_public_key(private_key_envelope: Envelope) -> Envelope:
     """
     Extracts the SSH private key from the given envelope, derives the corresponding
     public key, serializes it to OpenSSH format, and encapsulates it in a new envelope.

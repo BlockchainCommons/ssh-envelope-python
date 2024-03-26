@@ -3,6 +3,7 @@ import argparse
 import sys
 
 from ssh_envelope import logconfig
+from ssh_envelope.envelope import Envelope
 from ssh_envelope.ssh_keygen_utils import sign_message
 __all__ = ['logconfig']
 
@@ -28,22 +29,22 @@ def import_command(args: argparse.Namespace):
 
     envelope = import_ssh_object(object_data)
 
-    sys.stdout.write(envelope + '\n')
+    sys.stdout.write(envelope.ur + '\n')
 
 def export_command(args: argparse.Namespace):
     logger.info(f"Exporting object")
-    envelope = None
+    envelope: Envelope | None = None
 
     if args.envelope:
         logger.info("Reading envelope from --envelope")
-        envelope = args.envelope
+        envelope = Envelope(args.envelope)
     elif args.envelope_path:
         logger.info("Reading envelope from --envelope-path")
         with open(args.envelope_path, 'r') as file:
-            envelope = file.read()
+            envelope = Envelope(file.read())
     else:
         logger.info("Reading envelope from stdin")
-        envelope = sys.stdin.read()
+        envelope = Envelope(sys.stdin.read())
 
     object = export_ssh_object(envelope)
     if object is None:
@@ -54,25 +55,25 @@ def export_command(args: argparse.Namespace):
 def generate_command(args: argparse.Namespace):
     logger.info(f"Generating Ed25519 private key")
     envelope = generate_ed25519_private()
-    sys.stdout.write(envelope + '\n')
+    sys.stdout.write(envelope.ur + '\n')
 
 def public_command(args: argparse.Namespace):
     logger.info(f"Deriving public key from private key")
 
-    key = None
+    key: Envelope | None = None
     if args.key:
         logger.info("Reading key from --key")
-        key = args.key
+        key = Envelope(args.key)
     elif args.key_path:
         logger.info("Reading key from --key-path")
         with open(args.key_path, 'r') as file:
-            key = file.read()
+            key = Envelope(file.read())
     else:
         logger.info("Reading key from stdin")
-        key = sys.stdin.read()
+        key = Envelope(sys.stdin.read())
 
     public_key_envelope = derive_public_key(key)
-    sys.stdout.write(public_key_envelope + '\n')
+    sys.stdout.write(public_key_envelope.ur + '\n')
 
 def sign_data_command(args: argparse.Namespace):
     logger.info(f"Signing data")
@@ -80,17 +81,17 @@ def sign_data_command(args: argparse.Namespace):
     if not args.key and not args.key_path and not args.message and not args.message_path:
         raise ValueError("At least one of the key envelope (--key or --key-path) or the message to be signed (--message or --message-path) must be provided on the command line: they cannot both be provided via stdin.")
 
-    key = None
+    key: Envelope | None = None
     if args.key:
         logger.info("Reading key from --key")
         key = args.key
     elif args.key_path:
         logger.info("Reading key from --key-path")
         with open(args.key_path, 'r') as file:
-            key = file.read()
+            key = Envelope(file.read())
     elif not args.message and not args.message_path:
         logger.info("Reading key from stdin")
-        key = sys.stdin.read()
+        key = Envelope(sys.stdin.read())
 
     message = None
     if args.message:
@@ -110,7 +111,7 @@ def sign_data_command(args: argparse.Namespace):
         raise ValueError("Message to sign not provided.")
 
     signature_envelope = sign_message(message, key, args.namespace)
-    sys.stdout.write(signature_envelope + '\n')
+    sys.stdout.write(signature_envelope.ur + '\n')
 
 def main():
     parser = argparse.ArgumentParser(description="Envelope/SSH Key Management Tool")

@@ -2,6 +2,7 @@ import os
 import tempfile
 from typing import Optional
 
+from ssh_envelope.envelope import Envelope
 from ssh_envelope.envelope_utils import envelope_digest, export_ssh_object, export_public_key, export_signature
 from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
@@ -9,7 +10,7 @@ from ssh_envelope.ssh_object_utils import import_signature
 
 default_namespace = "file"
 
-def sign_message(message: bytes, private_key_envelope: str, namespace: str | None = None) -> str:
+def sign_message(message: bytes, private_key_envelope: Envelope, namespace: str | None = None) -> Envelope:
     with tempfile.TemporaryDirectory() as tmpdir:
         private_key_file = None
 
@@ -42,7 +43,7 @@ def sign_message(message: bytes, private_key_envelope: str, namespace: str | Non
             # Securely delete the temporary private key file
             secure_delete(private_key_file)
 
-def verify_message(message: bytes, signature_envelope: str, public_key_envelope: str, namespace: str | None = None) -> bool:
+def verify_message(message: bytes, signature_envelope: Envelope, public_key_envelope: Envelope, namespace: str | None = None) -> bool:
     with tempfile.TemporaryDirectory() as tmpdir:
         signature_file = None
         allowed_signers_file = None
@@ -85,6 +86,6 @@ def verify_message(message: bytes, signature_envelope: str, public_key_envelope:
             secure_delete(signature_file)
             secure_delete(allowed_signers_file)
 
-def sign_envelope_digest(envelope: str, private_key_envelope: str, namespace: str | None = None) -> str:
+def sign_envelope_digest(envelope: Envelope, private_key_envelope: Envelope, namespace: str | None = None) -> Envelope:
     digest = envelope_digest(envelope)
     return sign_message(digest, private_key_envelope, namespace)
