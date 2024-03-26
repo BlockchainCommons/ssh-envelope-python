@@ -1,5 +1,7 @@
 class Envelope:
     def __init__(self, ur: str):
+        if not ur.startswith("ur:envelope/"):
+            raise ValueError("Not an envelope UR")
         self._ur = ur
 
     def __repr__(self):
