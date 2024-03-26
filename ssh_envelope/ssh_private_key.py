@@ -1,5 +1,6 @@
 class SSHPrivateKey:
     def __init__(self, pem: str):
+        pem = pem.strip()
         if not pem.startswith("-----BEGIN OPENSSH PRIVATE KEY-----"):
             raise ValueError("Not an OpenSSH private key")
         self._pem = pem

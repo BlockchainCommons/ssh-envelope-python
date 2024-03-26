@@ -10,7 +10,7 @@ SUBJECT=`envelope subject type string 'Hello, world!'`
 WRAPPED_SUBJECT=`envelope subject type wrapped $SUBJECT`
 
 # Create two signers
-PRIVATE_KEY_1=`ssh_envelope generate`
+PRIVATE_KEY_1=`ssh_envelope import --object-path objects/test_ed25519_encrypted`
 PUBLIC_KEY_1=`ssh_envelope public --key $PRIVATE_KEY_1`
 PRIVATE_KEY_2=`ssh_envelope generate`
 PUBLIC_KEY_2=`ssh_envelope public --key $PRIVATE_KEY_2`

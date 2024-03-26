@@ -12,10 +12,54 @@ from ssh_envelope.ssh_object_utils import derive_public_key, generate_ed25519_pr
 
 logger = logging.getLogger(__name__)
 
-def import_command(args: argparse.Namespace):
-    logger.info(f"Importing SSH object")
-    object_data = None
 
+def read_envelope(args) -> Envelope:
+    envelope: Envelope | None = None
+    if args.envelope:
+        logger.info("Reading envelope from --envelope")
+        envelope = Envelope(args.envelope)
+    elif args.envelope_path:
+        logger.info("Reading envelope from --envelope-path")
+        with open(args.envelope_path, 'r') as file:
+            envelope = Envelope(file.read())
+    else:
+        logger.info("Reading envelope from stdin")
+        envelope = Envelope(sys.stdin.read())
+    return envelope
+
+
+def read_private_key(args) -> Envelope:
+    key: Envelope | None = None
+    if args.key:
+        logger.info("Reading private key from --key")
+        key = Envelope(args.key)
+    elif args.key_path:
+        logger.info("Reading private key from --key-path")
+        with open(args.key_path, 'r') as file:
+            key = Envelope(file.read())
+    else:
+        logger.info("Reading private key from stdin")
+        key = Envelope(sys.stdin.read())
+    return key
+
+
+def read_public_key(args) -> Envelope:
+    key: Envelope | None = None
+    if args.key:
+        logger.info("Reading public key from --key")
+        key = Envelope(args.key)
+    elif args.key_path:
+        logger.info("Reading public key from --key-path")
+        with open(args.key_path, 'r') as file:
+            key = Envelope(file.read())
+    else:
+        logger.info("Reading public key from stdin")
+        key = Envelope(sys.stdin.read())
+    return key
+
+
+def read_object_data(args) -> str:
+    object_data = None
     if args.object:
         logger.info("Reading SSH object from --object")
         object_data = args.object
@@ -26,90 +70,73 @@ def import_command(args: argparse.Namespace):
     else:
         logger.info("Reading SSH object from stdin")
         object_data = sys.stdin.read()
+    return object_data
 
+
+def import_command(args: argparse.Namespace):
+    logger.info(f"Importing SSH object")
+    object_data = read_object_data(args)
     envelope = Envelope.from_ssh_object(import_ssh_object(object_data))
-
     sys.stdout.write(envelope.ur + '\n')
+
 
 def export_command(args: argparse.Namespace):
     logger.info(f"Exporting object")
-    envelope: Envelope | None = None
-
-    if args.envelope:
-        logger.info("Reading envelope from --envelope")
-        envelope = Envelope(args.envelope)
-    elif args.envelope_path:
-        logger.info("Reading envelope from --envelope-path")
-        with open(args.envelope_path, 'r') as file:
-            envelope = Envelope(file.read())
-    else:
-        logger.info("Reading envelope from stdin")
-        envelope = Envelope(sys.stdin.read())
-
+    envelope = read_envelope(args)
     object = envelope.to_ssh_object()
-
     sys.stdout.write(f"{object}" + '\n')
+
 
 def generate_command(args: argparse.Namespace):
     logger.info(f"Generating Ed25519 private key")
     envelope = Envelope.from_ssh_private_key(generate_ed25519_private())
     sys.stdout.write(envelope.ur + '\n')
 
+
 def public_command(args: argparse.Namespace):
     logger.info(f"Deriving public key from private key")
-
-    key: Envelope | None = None
-    if args.key:
-        logger.info("Reading key from --key")
-        key = Envelope(args.key)
-    elif args.key_path:
-        logger.info("Reading key from --key-path")
-        with open(args.key_path, 'r') as file:
-            key = Envelope(file.read())
-    else:
-        logger.info("Reading key from stdin")
-        key = Envelope(sys.stdin.read())
-
+    key = read_private_key(args)
     public_key_envelope = Envelope.from_ssh_public_key(derive_public_key(key.to_ssh_private_key()))
     sys.stdout.write(public_key_envelope.ur + '\n')
 
-def sign_data_command(args: argparse.Namespace):
-    logger.info(f"Signing data")
 
-    if not args.key and not args.key_path and not args.message and not args.message_path:
-        raise ValueError("At least one of the key envelope (--key or --key-path) or the message to be signed (--message or --message-path) must be provided on the command line: they cannot both be provided via stdin.")
+# def sign_data_command(args: argparse.Namespace):
+#     logger.info(f"Signing data")
 
-    key: Envelope | None = None
-    if args.key:
-        logger.info("Reading key from --key")
-        key = Envelope(args.key)
-    elif args.key_path:
-        logger.info("Reading key from --key-path")
-        with open(args.key_path, 'r') as file:
-            key = Envelope(file.read())
-    elif not args.message and not args.message_path:
-        logger.info("Reading key from stdin")
-        key = Envelope(sys.stdin.read())
+#     if not args.key and not args.key_path and not args.message and not args.message_path:
+#         raise ValueError("At least one of the key envelope (--key or --key-path) or the message to be signed (--message or --message-path) must be provided on the command line: they cannot both be provided via stdin.")
 
-    message = None
-    if args.message:
-        logger.info("Reading message from --message")
-        message = args.message.encode()
-    elif args.message_path:
-        logger.info("Reading message from --message-path")
-        with open(args.message_path, 'rb') as file:
-            message = file.read()
-    elif not key:
-        logger.info("Reading message from stdin")
-        message = sys.stdin.buffer.read()
+#     key: Envelope | None = None
+#     if args.key:
+#         logger.info("Reading key from --key")
+#         key = Envelope(args.key)
+#     elif args.key_path:
+#         logger.info("Reading key from --key-path")
+#         with open(args.key_path, 'r') as file:
+#             key = Envelope(file.read())
+#     elif not args.message and not args.message_path:
+#         logger.info("Reading key from stdin")
+#         key = Envelope(sys.stdin.read())
 
-    if not key:
-        raise ValueError("Key envelope not provided.")
-    if not message:
-        raise ValueError("Message to sign not provided.")
+#     message = None
+#     if args.message:
+#         logger.info("Reading message from --message")
+#         message = args.message.encode()
+#     elif args.message_path:
+#         logger.info("Reading message from --message-path")
+#         with open(args.message_path, 'rb') as file:
+#             message = file.read()
+#     elif not key:
+#         logger.info("Reading message from stdin")
+#         message = sys.stdin.buffer.read()
 
-    signature_envelope = Envelope.from_ssh_signature(sign_message(message, key.to_ssh_private_key(), args.namespace))
-    sys.stdout.write(signature_envelope.ur + '\n')
+#     if not key:
+#         raise ValueError("Key envelope not provided.")
+#     if not message:
+#         raise ValueError("Message to sign not provided.")
+
+#     signature_envelope = Envelope.from_ssh_signature(sign_message(message, key.to_ssh_private_key(), args.namespace))
+#     sys.stdout.write(signature_envelope.ur + '\n')
 
 def add_signature_command(args: argparse.Namespace):
     logger.info(f"Adding signature to envelope")
@@ -117,37 +144,23 @@ def add_signature_command(args: argparse.Namespace):
     if not args.envelope and not args.envelope_path and not args.key and not args.key_path:
         raise ValueError("At least one of the envelope (--envelope or --envelope-path) or the key envelope (--key or --key-path) must be provided on the command line: they cannot both be provided via stdin.")
 
-    key: Envelope | None = None
-    if args.key:
-        logger.info("Reading key from --key")
-        key = Envelope(args.key)
-    elif args.key_path:
-        logger.info("Reading key from --key-path")
-        with open(args.key_path, 'r') as file:
-            key = Envelope(file.read())
-    elif not args.message and not args.message_path:
-        logger.info("Reading key from stdin")
-        key = Envelope(sys.stdin.read())
-
-    envelope: Envelope | None = None
-    if args.envelope:
-        logger.info("Reading envelope from --envelope")
-        envelope = Envelope(args.envelope)
-    elif args.envelope_path:
-        logger.info("Reading envelope from --envelope-path")
-        with open(args.envelope_path, 'r') as file:
-            envelope = Envelope(file.read())
-    elif not args.key and not args.key_path:
-        logger.info("Reading envelope from stdin")
-        envelope = Envelope(sys.stdin.read())
-
-    if not key:
-        raise ValueError("Key not provided.")
-    if not envelope:
-        raise ValueError("Envelope not provided.")
-
-    signed_envelope = envelope.sign(key, args.namespace)
+    key = read_private_key(args)
+    envelope = read_envelope(args)
+    signed_envelope = envelope.add_signature(key, "envelope")
     sys.stdout.write(signed_envelope.ur + '\n')
+
+
+def verify_signature_command(args: argparse.Namespace):
+    logger.info(f"Verifying signature on envelope")
+
+    if not args.envelope and not args.envelope_path and not args.key and not args.key_path:
+        raise ValueError("At least one of the envelope (--envelope or --envelope-path) or the key envelope (--key or --key-path) must be provided on the command line: they cannot both be provided via stdin.")
+
+    key = read_public_key(args)
+    envelope = read_envelope(args)
+    is_verified = envelope.verify_signature(key)
+    sys.stdout.write(f"{is_verified}\n")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Envelope/SSH Key Management Tool")
@@ -175,23 +188,30 @@ def main():
     parser_public.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
     parser_public.set_defaults(func=public_command)
 
-    # sign_data_command
-    parser_sign = subparsers.add_parser('sign-data', help='Sign data with a private key')
-    parser_sign.add_argument('-k', '--key', help='Private key envelope', default=None)
-    parser_sign.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
-    parser_sign.add_argument('-m', '--message', help='Message to sign', default=None)
-    parser_sign.add_argument('-M', '--message-path', help='Path to the file containing the message to sign', default=None)
-    parser_sign.add_argument('-n', '--namespace', help='Namespace for the signature', default='file')
-    parser_sign.set_defaults(func=sign_data_command)
+    # # sign_data_command
+    # parser_sign = subparsers.add_parser('sign-data', help='Sign data with a private key')
+    # parser_sign.add_argument('-k', '--key', help='Private key envelope', default=None)
+    # parser_sign.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
+    # parser_sign.add_argument('-m', '--message', help='Message to sign', default=None)
+    # parser_sign.add_argument('-M', '--message-path', help='Path to the file containing the message to sign', default=None)
+    # parser_sign.add_argument('-n', '--namespace', help='Namespace for the signature', default='file')
+    # parser_sign.set_defaults(func=sign_data_command)
 
     # add_signature_command
-    parser_add_signature = subparsers.add_parser('add-signature', help='Add a signature to an envelope. The digest of the subject is signed and a new `verifiedBy` assertion is added.')
+    parser_add_signature = subparsers.add_parser('add-signature', help='Add an SSH signature to an envelope. The digest of the subject is signed and a new `verifiedBy` assertion is added.')
     parser_add_signature.add_argument('-k', '--key', help='Private key envelope', default=None)
     parser_add_signature.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
     parser_add_signature.add_argument('-e', '--envelope', help='Envelope to sign', default=None)
     parser_add_signature.add_argument('-E', '--envelope-path', help='Path to the file containing the envelope to sign', default=None)
-    parser_add_signature.add_argument('-n', '--namespace', help='Namespace for the signature', default='file')
     parser_add_signature.set_defaults(func=add_signature_command)
+
+    # verify_signature_command
+    parser_verify_signature = subparsers.add_parser('verify-signature', help='Verify an SSH signature on an envelope.')
+    parser_verify_signature.add_argument('-k', '--key', help='Public key envelope', default=None)
+    parser_verify_signature.add_argument('-K', '--key-path', help='Path to the file containing the public key envelope', default=None)
+    parser_verify_signature.add_argument('-e', '--envelope', help='Envelope to verify', default=None)
+    parser_verify_signature.add_argument('-E', '--envelope-path', help='Path to the file containing the envelope to verify', default=None)
+    parser_verify_signature.set_defaults(func=verify_signature_command)
 
     args = parser.parse_args()
     if hasattr(args, 'func'):

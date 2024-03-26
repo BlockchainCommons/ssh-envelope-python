@@ -30,11 +30,11 @@ def test_wrap_and_sign_envelope():
 
     ssh_private_key = generate_ed25519_private()
     private_key = Envelope.from_ssh_private_key(ssh_private_key)
-    signed_envelope = wrapped_envelope.sign(private_key)
+    signed_envelope = wrapped_envelope.add_signature(private_key)
 
     ssh_public_key = derive_public_key(ssh_private_key)
     public_key = Envelope.from_ssh_public_key(ssh_public_key)
-    is_verified = signed_envelope.verify(public_key)
+    is_verified = signed_envelope.verify_signature(public_key)
     assert(is_verified)
 
 test_wrap_and_sign_envelope()

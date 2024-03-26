@@ -235,9 +235,9 @@ class Envelope:
         hex = run_command(["envelope", "extract", "cbor", self.ur]).decode()
         return extract_cbor_tag_and_value(bytes.fromhex(hex))
 
-    def sign(self: Self, private_key: Self, namespace: str | None = None) -> Self:
+    def add_signature(self: Self, private_key: Self, namespace: str | None = None) -> Self:
         """
-        Sign the envelope with the given private key.
+        Sign the envelope's subject with the given private key.
 
         The returned envelope will have a new `verifiedBy` assertion with the
         signature.
@@ -257,7 +257,7 @@ class Envelope:
         # Add the signature to the envelope
         return self.add_assertion(self.from_known_value("verifiedBy"), signature)
 
-    def verify(self: Self, public_key: Self, namespace: str | None = None) -> bool:
+    def verify_signature(self: Self, public_key: Self, namespace: str | None = None) -> bool:
         """
         Verify the envelope with the given public key.
 
