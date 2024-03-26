@@ -1,6 +1,6 @@
-from typing import TypeVar
+from typing import Any, TypeVar
 
-from ssh_envelope.cbor_utils import tagged_string
+from ssh_envelope.cbor_utils import extract_cbor_tag_and_value, tagged_string
 from ssh_envelope.run_command import run_command
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
@@ -73,3 +73,7 @@ class Envelope:
 
     def wrapped(self):
         return self.__class__(run_command(["envelope", "subject", "type", "wrapped", self.ur]).decode().strip())
+
+    def extract_tagged_cbor_subject(self) -> tuple[int, Any]:
+        hex = run_command(["envelope", "extract", "cbor", self.ur]).decode()
+        return extract_cbor_tag_and_value(bytes.fromhex(hex))
