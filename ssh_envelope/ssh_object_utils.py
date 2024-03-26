@@ -12,13 +12,10 @@ from ssh_envelope.envelope import Envelope
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_signature import SSHSignature
-
-from .envelope_utils import export_private_key, ssh_private_key_envelope, ssh_public_key_envelope
+from ssh_envelope.envelope_utils import export_private_key
 
 from . import logconfig
 __all__ = ['logconfig']
-
-from .envelope_utils import ssh_private_key_envelope, ssh_public_key_envelope, ssh_signature_envelope
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +33,12 @@ def import_ssh_object(string: str) -> Envelope:
 
 def import_signature(string: str) -> Envelope:
     signature = SSHSignature(string)
-    return ssh_signature_envelope(signature)
+    return Envelope.from_ssh_signature(signature)
 
 def import_public_key(string: str) -> Envelope:
     public_key = serialization.load_ssh_public_key(string.encode(), backend=default_backend())
     pem_key = SSHPublicKey(serialize_public_key(public_key))
-    return ssh_public_key_envelope(pem_key)
+    return Envelope.from_ssh_public_key(pem_key)
 
 def import_private_key(string: str) -> Envelope:
     input_data = string.encode()
@@ -53,14 +50,14 @@ def import_private_key(string: str) -> Envelope:
                 private_key = load_private_key(input_data)
                 logger.info("SSH key loaded successfully without password")
                 pem_key = SSHPrivateKey(serialize_private_key(private_key))
-                return ssh_private_key_envelope(pem_key)
+                return Envelope.from_ssh_private_key(pem_key)
             else:
                 logger.info(f"Attempt {attempt}/{max_attempts}: Prompting for password")
                 password = getpass("Enter the password for the SSH key: ").encode()
                 private_key = load_private_key(input_data, password=password)
                 logger.info("SSH key loaded successfully with password")
                 pem_key = SSHPrivateKey(serialize_private_key(private_key))
-                return ssh_private_key_envelope(pem_key)
+                return Envelope.from_ssh_private_key(pem_key)
         except ValueError as e:
             if "SSH key is password-protected." in str(e):
                 logger.info("SSH key is password-protected, prompting for password")
@@ -118,7 +115,7 @@ def generate_ed25519_private() -> Envelope:
     ).decode('utf-8')
 
     # Encapsulate the serialized private key in a Gordian envelope
-    envelope = ssh_private_key_envelope(SSHPrivateKey(ssh_private_key))
+    envelope = Envelope.from_ssh_private_key(SSHPrivateKey(ssh_private_key))
 
     return envelope
 
@@ -149,6 +146,6 @@ def derive_public_key(private_key_envelope: Envelope) -> Envelope:
     ).decode('utf-8')
 
     # Encapsulate the serialized public key in a new envelope
-    public_key_envelope = ssh_public_key_envelope(SSHPublicKey(ssh_public_key))
+    public_key_envelope = Envelope.from_ssh_public_key(SSHPublicKey(ssh_public_key))
 
     return public_key_envelope
