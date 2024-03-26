@@ -2,7 +2,7 @@ import os
 import tempfile
 from typing import Optional
 
-from ssh_envelope.envelope_utils import export_ssh_object, export_public_key, export_signature
+from ssh_envelope.envelope_utils import envelope_digest, export_ssh_object, export_public_key, export_signature
 from ssh_envelope.file_utils import secure_delete
 from ssh_envelope.run_command import run_command
 from ssh_envelope.ssh_object_utils import import_signature
@@ -84,3 +84,7 @@ def verify_message(message: bytes, signature_envelope: str, public_key_envelope:
             # Securely delete the temporary files
             secure_delete(signature_file)
             secure_delete(allowed_signers_file)
+
+def sign_envelope_digest(envelope: str, private_key_envelope: str, namespace: str | None = None) -> str:
+    digest = envelope_digest(envelope)
+    return sign_message(digest, private_key_envelope, namespace)
