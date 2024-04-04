@@ -17,7 +17,7 @@ def sign_message(message: bytes, private_key: SSHPrivateKey, namespace: str | No
             # Write the private key to a temporary file
             private_key_file = os.path.join(tmpdir, "id")
             with open(private_key_file, "w") as f:
-                f.write(private_key.pem)
+                f.write(private_key.pem_string)
 
             # Set appropriate permissions on the private key file
             os.chmod(private_key_file, 0o600)

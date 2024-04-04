@@ -105,7 +105,7 @@ def generate_ed25519_private() -> SSHPrivateKey:
 
 def derive_public_key(private_key_object: SSHPrivateKey) -> SSHPublicKey:
     # Load the private key
-    private_key = load_ssh_private_key(private_key_object.pem.encode(), password=None, backend=default_backend())
+    private_key = load_ssh_private_key(private_key_object.pem_string.encode(), password=None, backend=default_backend())
 
     # Derive the public key
     public_key = private_key.public_key()

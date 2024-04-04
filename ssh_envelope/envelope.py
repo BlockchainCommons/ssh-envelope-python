@@ -108,7 +108,7 @@ class Envelope:
         """
         Creates an envelope with an SSH private key subject.
         """
-        return cls.from_tagged_string(ssh_private_key_tag, private_key.pem)
+        return cls.from_tagged_string(ssh_private_key_tag, private_key.pem_string)
 
     def to_ssh_private_key(self) -> SSHPrivateKey:
         """
