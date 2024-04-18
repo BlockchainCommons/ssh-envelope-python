@@ -48,7 +48,7 @@ def verify_message(message: bytes, signature: SSHSignature, public_key: SSHPubli
             # Extract the key type and base64-encoded key
             key_type = public_key.type
             key_base64 = public_key.base64
-            identity = public_key.identity or "identity"
+            identity = public_key.comment or "identity"
             namespace = namespace or default_namespace
 
             # Write the public key to a temporary file in the allowed_signers format

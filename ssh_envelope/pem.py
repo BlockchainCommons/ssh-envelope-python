@@ -46,7 +46,8 @@ class PEM:
     def _encode_pem(self):
         base64_data = base64.b64encode(self._data).decode("utf-8")
         pem_lines = [f"-----BEGIN {self._header}-----"]
-        pem_lines.extend(base64_data[i:i+64] for i in range(0, len(base64_data), 64))
+        line_len = 70
+        pem_lines.extend(base64_data[i:i+line_len] for i in range(0, len(base64_data), line_len))
         pem_lines.append(f"-----END {self._header}-----")
         self._pem_string = "\n".join(pem_lines) + "\n"
 

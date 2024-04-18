@@ -1,18 +1,34 @@
+import base64
+from typing import List
+from ssh_envelope.ssh_buffer import SSHReadBuffer, SSHWriteBuffer
+from ssh_envelope.ssh_hash import SSHHash
+from ssh_envelope.ssh_key_type import SSHKeyType
+from ssh_envelope.ssh_utils import parse_public_key_data
+from ssh_envelope.string_utils import compact_joined, compact_joined_key_values
+
 class SSHPublicKey:
     def __init__(self, value: str):
-        # value = value.strip()
         if len(value.splitlines()) != 1:
             raise ValueError("Not an OpenSSH public key")
         self._value = value
         self._parts = value.split()
         if len(self._parts) < 2:
             raise ValueError("Not an OpenSSH public key")
-        self._type = self._parts[0]
-        self._base64 = self._parts[1]
-        self._identity = self._parts[2] if len(self._parts) > 2 else None
+        type = SSHKeyType.from_string(self._parts[0])
+        base64_data = self._parts[1]
+        decoded_data = base64.b64decode(base64_data)
+        buf = SSHReadBuffer(decoded_data)
+        self._key_data = parse_public_key_data(buf)
+        if type != self.key_data.type:
+            raise ValueError("Public key type mismatch")
+        self._comment = self._parts[2] if len(self._parts) > 2 else None
 
-    def __repr__(self):
-        return self._value
+    def __repr__(self) -> str:
+        return f"SSHPublicKey({compact_joined_key_values([
+            ('type', self.type),
+            ('key_data', self.key_data),
+            ('comment', self.comment)
+        ], separator=', ')})"
 
     def __eq__(self, other):
         if isinstance(other, SSHPublicKey):
@@ -22,22 +38,43 @@ class SSHPublicKey:
     def __hash__(self):
         return hash(self._value)
 
-    @property
-    def value(self):
-        return self._value
+    def hash(self, algorithm: SSHHash.Algorithm = SSHHash.Algorithm.SHA256) -> SSHHash:
+        return self.key_data.hash(algorithm)
 
     @property
-    def parts(self):
-        return self._parts
+    def key_data(self):
+        return self._key_data
 
     @property
-    def type(self):
-        return self._type
+    def type(self) -> SSHKeyType:
+        return self.key_data.type
 
     @property
-    def base64(self):
-        return self._base64
+    def comment(self) -> str:
+        return self._comment or ""
 
     @property
-    def identity(self):
-        return self._identity
+    def chunks(self) -> List[bytes]:
+        return [str(self.type).encode()] + self.key_data.chunks
+
+    @property
+    def base64_string(self):
+        data = SSHWriteBuffer.chunks_to_data(self.chunks)
+        return base64.b64encode(data).decode()
+
+    @property
+    def string(self):
+        return compact_joined([
+            str(self.type),
+            self.base64_string,
+            self.comment
+        ], separator=' ')
+
+    @property
+    def hash_string(self):
+        return " ".join([
+            str(self.key_data.key_size),
+            str(self.hash()),
+            self.comment,
+            f"({self.type.hash_name})",
+        ])

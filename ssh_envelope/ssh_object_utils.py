@@ -99,7 +99,7 @@ def generate_ed25519_private() -> SSHPrivateKey:
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.OpenSSH,
         encryption_algorithm=serialization.NoEncryption()
-    ).decode('utf-8')
+    ).decode()
 
     return SSHPrivateKey(ssh_private_key)
 
@@ -114,6 +114,6 @@ def derive_public_key(private_key_object: SSHPrivateKey) -> SSHPublicKey:
     ssh_public_key = public_key.public_bytes(
         encoding=serialization.Encoding.OpenSSH,
         format=serialization.PublicFormat.OpenSSH
-    ).decode('utf-8')
+    ).decode()
 
     return SSHPublicKey(ssh_public_key)
