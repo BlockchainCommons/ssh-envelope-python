@@ -1,5 +1,5 @@
 from ssh_envelope.ssh_public_key import SSHPublicKey
-from test_data import ed25519_public_key, rsa_public_key, dsa_public_key, ecdsa_public_key;
+from tests.test_data import ed25519_public_key, rsa_public_key, dsa_public_key, ecdsa_public_key;
 
 def test_ed25519_public_key():
     key = SSHPublicKey(ed25519_public_key)

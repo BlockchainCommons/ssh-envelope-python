@@ -29,3 +29,6 @@ def test_encode_pem():
     assert(pem.pem_string.strip() == example.strip())
     pem2 = PEM.from_pem_string(example)
     assert(pem == pem2)
+
+test_decode_pem()
+test_encode_pem()

@@ -1,5 +1,5 @@
 from ssh_envelope.ssh_private_key import SSHPrivateKey
-from test_data import ed25519_private_key;
+from tests.test_data import ed25519_private_key;
 
 def test_ed25519_private_key():
     key = SSHPrivateKey(ed25519_private_key)

@@ -20,3 +20,8 @@ def test_cbor_tagged_string_3():
     expected_output = bytes.fromhex('d903e86fe38193e38293e381abe381a1e381af')
     assert utils.tagged_string(tag, string) == expected_output
     assert (tag, string) == utils.extract_cbor_tag_and_value(expected_output)
+
+test_cbor_tagged_string_1()
+test_cbor_tagged_string_2()
+test_cbor_tagged_string_3()
+

@@ -40,3 +40,10 @@ def test_assertion_envelope_2():
     assert Envelope.from_assertion_pred_obj("known", "verifiedBy", "string", "Signature").format == inspect.cleandoc('''
     'verifiedBy': "Signature"
     ''')
+
+test_string_envelope()
+test_wrap_envelope()
+test_tagged_string_envelope()
+test_known_value_envelope()
+test_assertion_envelope_1()
+test_assertion_envelope_2()
