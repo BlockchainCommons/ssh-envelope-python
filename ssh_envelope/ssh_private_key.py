@@ -1,4 +1,4 @@
-from ssh_envelope.ssh_buffer import SSHReadBuffer
+from ssh_envelope.ssh_buffer import SSHReadBuffer, SSHWriteBuffer
 from ssh_envelope.pem import PEM
 from ssh_envelope.ssh_key_type import SSHKeyType
 from ssh_envelope.ssh_private_key_data import SSHPrivateKeyData
@@ -8,6 +8,7 @@ from ssh_envelope.string_utils import compact_joined_key_values
 
 magic = "openssh-key-v1"
 none = "none"
+pem_header = "OPENSSH PRIVATE KEY"
 
 class SSHPrivateKey:
     def __init__(self, pem, public_key_data, check_num, private_key_data, comment):
@@ -21,7 +22,7 @@ class SSHPrivateKey:
     @classmethod
     def from_pem_string(cls, pem_string: str):
         pem = PEM.from_pem_string(pem_string)
-        if not pem.header == "OPENSSH PRIVATE KEY":
+        if not pem.header == pem_header:
             raise ValueError("Not an OpenSSH private key")
         buffer = SSHReadBuffer(pem.data)
         if not buffer.read_null_terminated_string() == magic:
@@ -89,7 +90,33 @@ class SSHPrivateKey:
 
     @property
     def pem(self) -> PEM:
-        return self._pem
+        buf = SSHWriteBuffer()
+        buf.write_null_terminated_string(magic)
+        buf.write_length_prefixed_string(none) # cipher_name
+        buf.write_length_prefixed_string(none) # kdf_name
+        buf.write_empty_chunk() # kdf
+        buf.write_int(1) # num_keys
+
+        pub_buf = SSHWriteBuffer()
+        pub_buf.write_length_prefixed_string(str(self.type))
+        pub_buf.write_chunks(self.public_key_data.chunks)
+        buf.write_chunk(pub_buf.data)
+
+        priv_buf = SSHWriteBuffer()
+        priv_buf.write(self.check_num)
+        priv_buf.write(self.check_num)
+        priv_buf.write_length_prefixed_string(str(self.type))
+        if self.type in [SSHKeyType.DSA, SSHKeyType.ECDSA, SSHKeyType.ED25519]:
+            priv_buf.write_chunks(self.public_key_data.chunks)
+        elif self.type == SSHKeyType.RSA:
+            pass
+        else:
+            raise ValueError("Invalid key type")
+        priv_buf.write_chunks(self.private_key_data.chunks)
+        priv_buf.write_length_prefixed_string(self.comment or "")
+        priv_buf.write_padding()
+        buf.write_chunk(priv_buf.data)
+        return PEM.from_header_and_data(pem_header, buf.data)
 
     @property
     def pem_string(self) -> str:

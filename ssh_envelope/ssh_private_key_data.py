@@ -46,8 +46,10 @@ class SSHPrivateKeyData:
 
     @property
     def chunks(self) -> List[bytes]:
-        if self.type in [SSHKeyType.RSA, SSHKeyType.DSA, SSHKeyType.ED25519]:
+        if self.type in [SSHKeyType.RSA, SSHKeyType.DSA]:
             return self.data
+        elif self.type == SSHKeyType.ED25519:
+            return [self.data[0] + self.data[1]]
         elif self.type == SSHKeyType.ECDSA:
             return [str(type).encode(), self.data[0]]
         else:
