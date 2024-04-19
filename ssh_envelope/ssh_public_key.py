@@ -77,10 +77,22 @@ class SSHPublicKey:
         ], separator=' ')
 
     @property
+    def key_size(self) -> int:
+        return self.key_data.key_size
+
+    @property
+    def fingerprint(self) -> str:
+        return str(self.hash())
+
+    @property
+    def type_name(self) -> str:
+        return str(self.type.name)
+
+    @property
     def hash_string(self):
         return " ".join([
-            str(self.key_data.key_size),
-            str(self.hash()),
+            str(self.key_size),
+            str(self.fingerprint),
             self.comment,
-            f"({self.type.hash_name})",
+            f"({self.type_name})",
         ])
