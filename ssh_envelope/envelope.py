@@ -118,7 +118,7 @@ class Envelope:
         """
         tag, value = self.extract_tagged_cbor_subject()
         if tag == ssh_private_key_tag:
-            return SSHPrivateKey(value)
+            return SSHPrivateKey.from_pem_string(value)
         else:
             raise ValueError("Invalid SSH private key")
 
@@ -137,7 +137,7 @@ class Envelope:
         """
         tag, value = self.extract_tagged_cbor_subject()
         if tag == ssh_public_key_tag:
-            return SSHPublicKey(value)
+            return SSHPublicKey.from_string(value)
         else:
             raise ValueError("Invalid SSH public key")
 
@@ -146,7 +146,7 @@ class Envelope:
         """
         Creates an envelope with an SSH signature subject.
         """
-        return cls.from_tagged_string(ssh_signature_tag, signature.pem)
+        return cls.from_tagged_string(ssh_signature_tag, signature.pem_string)
 
     def to_ssh_signature(self) -> SSHSignature:
         """
@@ -156,7 +156,7 @@ class Envelope:
         """
         tag, value = self.extract_tagged_cbor_subject()
         if tag == ssh_signature_tag:
-            return SSHSignature(value)
+            return SSHSignature.from_pem_string(value)
         else:
             raise ValueError("Invalid SSH signature")
 
@@ -197,11 +197,11 @@ class Envelope:
         """
         tag, value = self.extract_tagged_cbor_subject()
         if tag == ssh_private_key_tag:
-            return SSHPrivateKey(value)
+            return SSHPrivateKey.from_pem_string(value)
         elif tag == ssh_public_key_tag:
-            return SSHPublicKey(value)
+            return SSHPublicKey.from_string(value)
         elif tag == ssh_signature_tag:
-            return SSHSignature(value)
+            return SSHSignature.from_pem_string(value)
         else:
             raise ValueError("Invalid SSH object")
 

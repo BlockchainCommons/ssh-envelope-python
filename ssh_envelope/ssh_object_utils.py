@@ -29,11 +29,11 @@ def import_ssh_object(string: str) -> SSHPrivateKey | SSHPublicKey | SSHSignatur
     raise ValueError("Failed to import SSH object")
 
 def import_signature(string: str) -> SSHSignature:
-    return SSHSignature(string)
+    return SSHSignature.from_pem_string(string)
 
 def import_public_key(string: str) -> SSHPublicKey:
     public_key = serialization.load_ssh_public_key(string.encode(), backend=default_backend())
-    return SSHPublicKey(serialize_public_key(public_key))
+    return SSHPublicKey.from_string(serialize_public_key(public_key))
 
 def import_private_key(string: str) -> SSHPrivateKey:
     input_data = string.encode()
@@ -44,13 +44,13 @@ def import_private_key(string: str) -> SSHPrivateKey:
                 logger.info("Attempting to load SSH key without password")
                 private_key = load_private_key(input_data)
                 logger.info("SSH key loaded successfully without password")
-                return SSHPrivateKey(serialize_private_key(private_key))
+                return SSHPrivateKey.from_pem_string(serialize_private_key(private_key))
             else:
                 logger.info(f"Attempt {attempt}/{max_attempts}: Prompting for password")
                 password = getpass("Enter the password for the SSH key: ").encode()
                 private_key = load_private_key(input_data, password=password)
                 logger.info("SSH key loaded successfully with password")
-                return SSHPrivateKey(serialize_private_key(private_key))
+                return SSHPrivateKey.from_pem_string(serialize_private_key(private_key))
         except ValueError as e:
             if "SSH key is password-protected." in str(e):
                 logger.info("SSH key is password-protected, prompting for password")
@@ -101,7 +101,7 @@ def generate_ed25519_private() -> SSHPrivateKey:
         encryption_algorithm=serialization.NoEncryption()
     ).decode()
 
-    return SSHPrivateKey(ssh_private_key)
+    return SSHPrivateKey.from_pem_string(ssh_private_key)
 
 def derive_public_key(private_key_object: SSHPrivateKey) -> SSHPublicKey:
     # Load the private key
@@ -116,4 +116,4 @@ def derive_public_key(private_key_object: SSHPrivateKey) -> SSHPublicKey:
         format=serialization.PublicFormat.OpenSSH
     ).decode()
 
-    return SSHPublicKey(ssh_public_key)
+    return SSHPublicKey.from_string(ssh_public_key)

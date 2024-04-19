@@ -25,7 +25,7 @@ def sign_message(message: bytes, private_key: SSHPrivateKey, namespace: str | No
             # Run ssh-keygen to sign the message, passing the message via stdin
             namespace = namespace or default_namespace
             signature = run_command(["ssh-keygen", "-Y", "sign", "-f", private_key_file, "-n", namespace], stdin=message)
-            return SSHSignature(signature.decode())
+            return SSHSignature.from_pem_string(signature.decode())
 
         except Exception as e:
             raise Exception(f"Failed to sign data: {str(e)}") from e
@@ -43,7 +43,7 @@ def verify_message(message: bytes, signature: SSHSignature, public_key: SSHPubli
             # Write the signature to a temporary file
             signature_file = os.path.join(tmpdir, "signature.sig")
             with open(signature_file, "w") as f:
-                f.write(signature.pem)
+                f.write(signature.pem_string)
 
             # Extract the key type and base64-encoded key
             key_type = public_key.type
