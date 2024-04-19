@@ -31,7 +31,7 @@ def test_ecdsa_public_key():
     assert key.string == ecdsa_public_key
     assert key.hash_string == "256 SHA256:auPD86cNL0AFoBVNqHE4kBv7zcMcgJ3vFcT1G6efZNo wolf@Wolfs-MacBook-Pro.local (ECDSA)"
 
-test_ed25519_public_key()
-test_rsa_public_key()
-test_dsa_public_key()
-test_ecdsa_public_key()
+# test_ed25519_public_key()
+# test_rsa_public_key()
+# test_dsa_public_key()
+# test_ecdsa_public_key()

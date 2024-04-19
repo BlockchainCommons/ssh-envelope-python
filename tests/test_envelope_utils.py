@@ -41,9 +41,9 @@ def test_assertion_envelope_2():
     'verifiedBy': "Signature"
     ''')
 
-test_string_envelope()
-test_wrap_envelope()
-test_tagged_string_envelope()
-test_known_value_envelope()
-test_assertion_envelope_1()
-test_assertion_envelope_2()
+# test_string_envelope()
+# test_wrap_envelope()
+# test_tagged_string_envelope()
+# test_known_value_envelope()
+# test_assertion_envelope_1()
+# test_assertion_envelope_2()

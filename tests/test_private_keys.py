@@ -30,7 +30,7 @@ def test_ecdsa_private_key():
     assert repr(key) == "SSHPrivateKey(type: ecdsa-sha2-nistp256, public_key_data: 048d9320a7acb219babd96b2ffd06cdadca99647ff39b1c7ba58c40b5493769767d59fd557b92f3b10be4f5179abc1d8882d1aa37693ea5c5bf91a582d0be3da20, check_num: 4f193f66, private_key_data: 00e461ff94992dd07a77da51be4732a84f5ae4b6391fb735f1f1804c1fc6686cee, comment: wolf@Wolfs-MacBook-Pro.local)"
     assert key.pem_string == ecdsa_private_key
 
-test_ed25519_private_key()
-test_rsa_private_key()
-test_dsa_private_key()
-test_ecdsa_private_key()
+# test_ed25519_private_key()
+# test_rsa_private_key()
+# test_dsa_private_key()
+# test_ecdsa_private_key()

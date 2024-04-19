@@ -37,5 +37,5 @@ def test_wrap_and_sign_envelope():
     is_verified = signed_envelope.verify_signature(public_key)
     assert(is_verified)
 
-test_sign()
-test_wrap_and_sign_envelope()
+# test_sign()
+# test_wrap_and_sign_envelope()

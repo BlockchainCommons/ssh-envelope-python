@@ -21,7 +21,7 @@ def test_cbor_tagged_string_3():
     assert utils.tagged_string(tag, string) == expected_output
     assert (tag, string) == utils.extract_cbor_tag_and_value(expected_output)
 
-test_cbor_tagged_string_1()
-test_cbor_tagged_string_2()
-test_cbor_tagged_string_3()
+# test_cbor_tagged_string_1()
+# test_cbor_tagged_string_2()
+# test_cbor_tagged_string_3()
 
