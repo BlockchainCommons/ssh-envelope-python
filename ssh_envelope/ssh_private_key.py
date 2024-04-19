@@ -2,6 +2,7 @@ from ssh_envelope.ssh_buffer import SSHReadBuffer, SSHWriteBuffer
 from ssh_envelope.pem import PEM
 from ssh_envelope.ssh_key_type import SSHKeyType
 from ssh_envelope.ssh_private_key_data import SSHPrivateKeyData
+from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_public_key_data import SSHPublicKeyData
 from ssh_envelope.ssh_utils import parse_public_key_data
 from ssh_envelope.string_utils import compact_joined_key_values
@@ -57,10 +58,7 @@ class SSHPrivateKey:
 
         private_key_data = SSHPrivateKeyData(priv_buf, public_key_data.type, public_key_data)
 
-        if priv_buf.remaining >= 4:
-            comment = priv_buf.read_length_prefixed_string()
-        else:
-            comment = None
+        comment = priv_buf.read_length_prefixed_string()
 
         priv_buf.expect_padding()
         if not priv_buf.is_at_end:
@@ -125,6 +123,10 @@ class SSHPrivateKey:
     @property
     def type(self) -> SSHKeyType:
         return self._type
+
+    @property
+    def public_key(self) -> SSHPublicKey:
+        return SSHPublicKey(self.public_key_data, self.comment)
 
     @property
     def public_key_data(self) -> SSHPublicKeyData:

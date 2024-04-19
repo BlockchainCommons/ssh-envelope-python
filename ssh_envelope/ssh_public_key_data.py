@@ -35,6 +35,7 @@ class SSHPublicKeyData:
             return self.data
         elif self.type == SSHKeyType.ECDSA:
             return [str(self.type.subtype).encode(), self.data[0]]
+            # return self.data
         else:
             raise ValueError("Invalid key type")
 
@@ -46,7 +47,7 @@ class SSHPublicKeyData:
     def __str__(self) -> str:
         if self.type == SSHKeyType.RSA:
             public_exponent, modulus = self.data
-            return f"(publicExponent: {public_exponent.hex()}, modulus: {modulus.hex()})"
+            return f"(public_exponent: {public_exponent.hex()}, modulus: {modulus.hex()})"
         elif self.type == SSHKeyType.DSA:
             p, q, g, y = self.data
             return f"(p: {p.hex()}, q: {q.hex()}, g: {g.hex()}, y: {y.hex()})"

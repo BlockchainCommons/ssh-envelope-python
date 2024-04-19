@@ -97,3 +97,7 @@ class SSHWriteBuffer:
     def write_padding(self):
         padding_needed = 8 - (len(self.data) % 8)
         self.write(b"\x01\x02\x03\x04\x05\x06\x07"[:padding_needed])
+
+    @property
+    def length(self) -> int:
+        return len(self.data)

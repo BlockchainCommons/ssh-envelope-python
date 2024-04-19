@@ -25,10 +25,9 @@ class SSHPrivateKeyData:
             x = buf.read_chunk()
             self.data = [x]
         elif key_type == SSHKeyType.ECDSA:
-            type_string = buf.read_length_prefixed_string()
-            subtype = ECDSAType.from_string(type_string)
-            if not subtype or subtype != key_type.value[1]:
-                raise ValueError("Invalid ECDSA type")
+            public_key_data_2 = parse_public_key_data(buf, key_type)
+            if public_key_data != public_key_data_2:
+                raise ValueError("OpenSSH private key: Public key mismatch")
             data = buf.read_chunk()
             self.data = [data]
         elif key_type == SSHKeyType.ED25519:
@@ -51,14 +50,14 @@ class SSHPrivateKeyData:
         elif self.type == SSHKeyType.ED25519:
             return [self.data[0] + self.data[1]]
         elif self.type == SSHKeyType.ECDSA:
-            return [str(type).encode(), self.data[0]]
+            return self.data
         else:
             raise ValueError("Invalid key type")
 
     def __str__(self) -> str:
         if self.type == SSHKeyType.RSA:
             modulus, public_exponent, private_exponent, prime1, prime2, coefficient = self.data
-            return f"(modulus: {modulus.hex()}, publicExponent: {public_exponent.hex()}, privateExponent: {private_exponent.hex()}, prime1: {prime1.hex()}, prime2: {prime2.hex()}, coefficient: {coefficient.hex()})"
+            return f"(modulus: {modulus.hex()}, public_exponent: {public_exponent.hex()}, private_exponent: {private_exponent.hex()}, prime1: {prime1.hex()}, prime2: {prime2.hex()}, coefficient: {coefficient.hex()})"
         elif self.type == SSHKeyType.DSA:
             return self.data[0].hex()
         elif self.type == SSHKeyType.ECDSA:
