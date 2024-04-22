@@ -1,3 +1,7 @@
+#
+# main.py
+#
+
 import logging
 import argparse
 import sys
@@ -5,6 +9,7 @@ import sys
 from ssh_envelope import logconfig
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
+from ssh_envelope.version import __version__
 __all__ = ['logconfig']
 
 from ssh_envelope.envelope import Envelope
@@ -192,7 +197,7 @@ def verify_signature_command(args: argparse.Namespace):
 
 def _main(arg_array):
     if "--version" in arg_array:
-        print("SSH Envelope version 0.1.0")
+        print(f"SSH Envelope version {__version__}")
         sys.exit(0)
 
     parser = argparse.ArgumentParser(description="Envelope/SSH Key Management Tool")

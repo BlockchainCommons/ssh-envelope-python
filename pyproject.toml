@@ -1,10 +1,14 @@
+#
+# pyproject.toml
+#
+
 [build-system]
 requires = ["setuptools>=40.8.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ssh_envelope"
-version = "0.1.0"
+dynamic = ["version"]
 authors = [
     { name = "Wolf McNally", email = "wolf@wolfmcnally.com" },
     { name = "Christopher Allen", email = "christophera@lifewithalacrity.com" },
@@ -25,6 +29,9 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["ssh_envelope"]
+
+[tool.setuptools.dynamic]
+version = {attr = "ssh_envelope.version.__version__"}
 
 [project.scripts]
 ssh_envelope = "ssh_envelope.main:main"
