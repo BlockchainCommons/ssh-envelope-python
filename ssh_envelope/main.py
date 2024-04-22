@@ -4,6 +4,7 @@ import sys
 
 from ssh_envelope import logconfig
 from ssh_envelope.ssh_private_key import SSHPrivateKey
+from ssh_envelope.ssh_public_key import SSHPublicKey
 __all__ = ['logconfig']
 
 from ssh_envelope.envelope import Envelope
@@ -78,6 +79,11 @@ def import_command(args: argparse.Namespace):
     logger.info(f"Importing SSH object")
     object_data = read_object_data(args)
     object = import_ssh_object(object_data)
+    if args.comment:
+        if isinstance(object, SSHPrivateKey):
+            object.comment = args.comment
+        elif isinstance(object, SSHPublicKey):
+            object.comment = args.comment
     # This is a workaround to set the comment on the private key object because
     # OpenSSH encrypted private key files do *not* contain a comment field, even
     # though a *decrypted* private key files and public key file do. When asked
@@ -184,6 +190,7 @@ def main():
     parser_import = subparsers.add_parser('import', help='Convert an SSH object to an envelope')
     parser_import.add_argument('-o', '--object', help='SSH object as a string', default=None)
     parser_import.add_argument('-O', '--object-path', help='Path to the file containing the SSH object', default=None)
+    parser_import.add_argument('-c', '--comment', help='Comment to add to the private or public key. Overrides any comment contained in the original object. Ignored for signatures.', default=None)
     parser_import.set_defaults(func=import_command)
 
     # export_command
@@ -194,6 +201,7 @@ def main():
 
     # generate_command
     parser_generate = subparsers.add_parser('generate', help='Generate a new Ed25519 private key')
+    parser_generate.add_argument('-c', '--comment', help='Comment to add to the private key', default=None)
     parser_generate.set_defaults(func=generate_command)
 
     # public_command

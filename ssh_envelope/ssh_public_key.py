@@ -87,6 +87,10 @@ class SSHPublicKey:
     def comment(self) -> str:
         return self._comment or ""
 
+    @comment.setter
+    def comment(self, value: str):
+        self._comment = value
+
     @property
     def type_name(self) -> str:
         return str(self.type.name)
