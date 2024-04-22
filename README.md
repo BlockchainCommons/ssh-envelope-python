@@ -114,6 +114,9 @@ We examine the contents of the envelopes created in the example above.
 
 ```shell
 $ envelope format $PRIVATE_KEY_1
+```
+
+```
 SSHPrivateKey [
     "comment": "wolf@Wolfs-MacBook-Pro.local"
     "fingerprint": "SHA256:wonJHWbmVYaZyry76VO/QM50PRqBKbFB1y3oBAGRtuY"
@@ -129,6 +132,9 @@ SSHPrivateKey [
 
 ```shell
 $ envelope format $PUBLIC_KEY_1
+```
+
+```
 SSHPublicKey [
     "comment": "wolf@Wolfs-MacBook-Pro.local"
     "fingerprint": "SHA256:wonJHWbmVYaZyry76VO/QM50PRqBKbFB1y3oBAGRtuY"
@@ -143,6 +149,9 @@ SSHPublicKey [
 
 ```shell
 $ envelope format $SIGNED_ENVELOPE
+```
+
+```
 {
     "Hello, world!"
 } [
@@ -163,6 +172,7 @@ $ envelope format $SIGNED_ENVELOPE
 - Each `verifiedBy` assertion has as its object an `SSHSignature` object, which is a CBOR-tagged PEM-encoded signature, as produced by `ssh-keygen`.
 - The signature carries additional assertions with extracted metadata.
 - The signature is over the digest of the subject, which is the wrapped envelope. This means that the envelope or any part of it could be elided without invalidating the signatures.
+- The default signing namespace is `envelope`. When signing, you can specify this with the `--namespace` option.
 
 ## User Guide
 
@@ -177,6 +187,9 @@ $ envelope format $SIGNED_ENVELOPE
 
 ```shell
 $ ssh_envelope import --object-path objects/test_ed25519
+```
+
+```
 ur:envelope/...
 ```
 
@@ -184,6 +197,9 @@ ur:envelope/...
 
 ```shell
 $ ssh_envelope import --object "$(cat objects/test_ed25519.pub)"
+```
+
+```
 ur:envelope/...
 ```
 
@@ -191,6 +207,9 @@ ur:envelope/...
 
 ```shell
 $ ssh_envelope import < objects/test_ed25519_unencrypted
+```
+
+```
 ur:envelope/...
 ```
 
@@ -200,6 +219,9 @@ ur:envelope/...
 
 ```shell
 $ ssh_envelope export --envelope $PRIVATE_KEY_1
+```
+
+```
 -----BEGIN OPENSSH PRIVATE KEY-----
 ...
 -----END OPENSSH PRIVATE KEY-----
@@ -211,6 +233,9 @@ $ ssh_envelope export --envelope $PRIVATE_KEY_1
 
 ```shell
 $ ssh_envelope generate
+```
+
+```
 ur:envelope/...
 ```
 
@@ -220,6 +245,9 @@ ur:envelope/...
 
 ```shell
 $ ssh_envelope public --key $PRIVATE_KEY_1
+```
+
+```
 ur:envelope/...
 ```
 
@@ -231,6 +259,9 @@ ur:envelope/...
 
 ```shell
 $ ssh_envelope add-signature --key $PRIVATE_KEY_1 --envelope $WRAPPED_SUBJECT
+```
+
+```
 ur:envelope/...
 ```
 
@@ -244,11 +275,20 @@ ur:envelope/...
 
 ```shell
 $ ssh_envelope verify-signature --key $PUBLIC_KEY_1 --envelope $SIGNED_ENVELOPE
+```
+
+```
 ur:envelope/...
 
+```shell
 $ ssh_envelope verify-signature --key $PUBLIC_KEY_1 --envelope $SIGNED_ENVELOPE --silent # prints nothing
+```
 
+```shell
 $ ssh_envelope verify-signature --key $PUBLIC_KEY_3 --envelope $SIGNED_ENVELOPE # Fails with exit code 1
+```
+
+```
 Signature verification failed
 ```
 
@@ -261,39 +301,39 @@ This section contains recipies for interacting with `ssh-keygen`.
 - Asks for a password to encrypt the private key. If no password is desired, enter an empty password.
 - The public key is saved in a file with the same name as the private key, but with a `.pub` extension.
 
-```sh
-ssh-keygen -t ed25519 -f test_ed25519_encrypted
+```shell
+$ ssh-keygen -t ed25519 -f test_ed25519_encrypted
 ```
 
 ### Change or Remove the Password from a Private Key
 
 - We copy the file because the commmand verwrites the existing file with the new file that has the new password (or no password).
 
-```sh
-cp test_ed25519_encrypted test_ed25519_unencrypted
-ssh-keygen -p -f test_ed25519_unencrypted
+```shell
+$ cp test_ed25519_encrypted test_ed25519_unencrypted
+$ ssh-keygen -p -f test_ed25519_unencrypted
 ```
 
 ### Extract the Public Key from a Private Key
 
-```sh
-ssh-keygen -y -f test_ed25519_encrypted > test_ed25519.pub
+```shell
+$ ssh-keygen -y -f test_ed25519_encrypted > test_ed25519.pub
 ```
 
 ### Sign a File
 
-```sh
-ssh-keygen -Y sign -f test_ed25519_unencrypted -n file < example_data.txt > example_data.txt.sig
+```shell
+$ ssh-keygen -Y sign -f test_ed25519_unencrypted -n file < example_data.txt > example_data.txt.sig
 ```
 
 ### Create an `allowed_signers` File from a Public Key
 
-```sh
-awk '{print $3 " " $1 " " $2}' test_ed25519.pub > allowed_signers
+```shell
+$ awk '{print $3 " " $1 " " $2}' test_ed25519.pub > allowed_signers
 ```
 
 ### Verify a File
 
-```sh
-ssh-keygen -Y verify -f allowed_signers -I wolf@Wolfs-MacBook-Pro.local -n file -s example_data.txt.sig < example_data.txt
+```shell
+$ ssh-keygen -Y verify -f allowed_signers -I wolf@Wolfs-MacBook-Pro.local -n file -s example_data.txt.sig < example_data.txt
 ```
