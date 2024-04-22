@@ -8,7 +8,7 @@ from ssh_envelope.ssh_utils import parse_public_key_data
 from ssh_envelope.string_utils import compact_joined, compact_joined_key_values
 
 class SSHPublicKey:
-    def __init__(self, key_data: SSHPublicKeyData, comment: str | None):
+    def __init__(self, key_data: SSHPublicKeyData, comment: str):
         self._key_data = key_data
         self._comment = comment
 
@@ -16,7 +16,7 @@ class SSHPublicKey:
     def from_string(cls, value: str) -> "SSHPublicKey":
         if len(value.splitlines()) != 1:
             raise ValueError("Not an OpenSSH public key")
-        parts = value.split()
+        parts = value.strip().split(" ")
         if len(parts) < 2:
             raise ValueError("Not an OpenSSH public key")
         type = SSHKeyType.from_string(parts[0])
@@ -26,7 +26,7 @@ class SSHPublicKey:
         key_data = parse_public_key_data(buf)
         if type != key_data.type:
             raise ValueError("Public key type mismatch")
-        comment = parts[2] if len(parts) > 2 else None
+        comment = ' '.join(parts[2:]) if len(parts) > 2 else ''
         return cls(key_data, comment)
 
     def __repr__(self) -> str:

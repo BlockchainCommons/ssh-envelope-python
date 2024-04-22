@@ -34,7 +34,8 @@ def import_signature(string: str) -> SSHSignature:
 
 def import_public_key(string: str) -> SSHPublicKey:
     public_key = serialization.load_ssh_public_key(string.encode(), backend=default_backend())
-    return SSHPublicKey.from_string(serialize_public_key(public_key))
+    # return SSHPublicKey.from_string(serialize_public_key(public_key))
+    return SSHPublicKey.from_string(string)
 
 def import_private_key(string: str) -> SSHPrivateKey:
     input_data = string.encode()
