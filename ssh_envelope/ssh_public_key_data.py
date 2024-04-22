@@ -4,7 +4,10 @@ from ssh_envelope.ssh_hash import SSHHash
 from ssh_envelope.ssh_key_type import ECDSAType, SSHKeyType
 
 class SSHPublicKeyData:
-    def __init__(self, buf: SSHReadBuffer, key_type: SSHKeyType):
+    def __init__(self,
+                 buf: SSHReadBuffer,
+                 key_type: SSHKeyType
+                 ):
         self.type = key_type
         if key_type == SSHKeyType.RSA:
             public_exponent = buf.read_chunk()

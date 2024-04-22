@@ -12,7 +12,12 @@ none = "none"
 pem_header = "OPENSSH PRIVATE KEY"
 
 class SSHPrivateKey:
-    def __init__(self, pem: PEM, public_key_data: SSHPublicKeyData, check_num: bytes, private_key_data: SSHPrivateKeyData, comment: str):
+    def __init__(self,
+                 pem: PEM,
+                 public_key_data: SSHPublicKeyData,
+                 check_num: bytes,
+                 private_key_data: SSHPrivateKeyData,
+                 comment: str):
         self._pem = pem
         self._public_key_data = public_key_data
         self._check_num = check_num
@@ -21,34 +26,34 @@ class SSHPrivateKey:
         self._type = self._public_key_data.type
 
     @classmethod
-    def from_pem_string(cls, pem_string: str):
+    def from_pem_string(cls, pem_string: str) -> "SSHPrivateKey":
         pem = PEM.from_pem_string(pem_string)
         if not pem.header == pem_header:
             raise ValueError("Not an OpenSSH private key")
-        buffer = SSHReadBuffer(pem.data)
-        if not buffer.read_null_terminated_string() == magic:
+        buf = SSHReadBuffer(pem.data)
+        if not buf.read_null_terminated_string() == magic:
             raise ValueError("OpenSSH private key: magic value mismatch")
-        cipher_name = buffer.read_length_prefixed_string()
+        cipher_name = buf.read_length_prefixed_string()
         if not cipher_name == none:
             raise ValueError("OpenSSH private key: Unsupported cipher")
-        kdf_name = buffer.read_length_prefixed_string()
+        kdf_name = buf.read_length_prefixed_string()
         if not kdf_name == none:
             raise ValueError("OpenSSH private key: Unsupported KDF")
-        kdf = buffer.read_chunk()
+        kdf = buf.read_chunk()
         if not kdf == b"":
             raise ValueError("OpenSSH private key: Unsupported KDF")
-        num_keys = buffer.read_int()
+        num_keys = buf.read_int()
         if num_keys != 1:
             raise ValueError("OpenSSH private key: Expected one key")
 
-        public_key_chunk = buffer.read_chunk()
+        public_key_chunk = buf.read_chunk()
         pub_buf = SSHReadBuffer(public_key_chunk)
         public_key_data = parse_public_key_data(pub_buf)
         if not pub_buf.is_at_end:
             raise ValueError("OpenSSH private key: Extra data after public key")
 
-        private_key_chunk = buffer.read_chunk()
-        if not buffer.is_at_end:
+        private_key_chunk = buf.read_chunk()
+        if not buf.is_at_end:
             raise ValueError("OpenSSH private key: Extra data after private key")
         priv_buf = SSHReadBuffer(private_key_chunk)
         check_num = priv_buf.read(4)
@@ -80,7 +85,7 @@ class SSHPrivateKey:
 
     def __eq__(self, other):
         if isinstance(other, SSHPrivateKey):
-            return self.pem == other._pem
+            return self.pem == other.pem
         return False
 
     def __hash__(self):

@@ -1,12 +1,21 @@
 from enum import Enum
 from base64 import b64encode, b64decode
 from typing import Union
-from hashlib import sha256
+from hashlib import sha256, sha512
 
 class SSHHash:
     class Algorithm(Enum):
         SHA256 = "SHA256"
+        SHA512 = "SHA512"
         MD5 = "MD5"
+
+        @classmethod
+        def from_string(cls, value: str):
+            value = value.upper()
+            for algorithm in cls:
+                if algorithm.value == value:
+                    return algorithm
+            raise ValueError("Unsupported SSH hash algorithm")
 
         def __str__(self):
             return self.value
@@ -20,6 +29,13 @@ class SSHHash:
                     data = b64decode(data + "=")
                 except:
                     raise ValueError("Invalid SHA256 hash string")
+            elif algorithm == self.Algorithm.SHA512:
+                if len(data) != 86:
+                    raise ValueError("Invalid SHA512 hash string")
+                try:
+                    data = b64decode(data + "==")
+                except:
+                    raise ValueError("Invalid SHA512 hash string")
             elif algorithm == self.Algorithm.MD5:
                 data = data.replace(":", "")
                 try:
@@ -31,6 +47,8 @@ class SSHHash:
 
         if algorithm == self.Algorithm.SHA256 and len(data) != 32:
             raise ValueError("Invalid SHA256 hash length")
+        elif algorithm == self.Algorithm.SHA512 and len(data) != 64:
+            raise ValueError("Invalid SHA512 hash length")
         elif algorithm == self.Algorithm.MD5 and len(data) != 16:
             raise ValueError("Invalid MD5 hash length")
 
@@ -41,6 +59,8 @@ class SSHHash:
     def from_hash_image(cls, hash_image: bytes, algorithm: Algorithm = Algorithm.SHA256):
         if algorithm == cls.Algorithm.SHA256:
             data = sha256(hash_image).digest()
+        elif algorithm == cls.Algorithm.SHA512:
+            data = sha512(hash_image).digest()
         elif algorithm == cls.Algorithm.MD5:
             raise NotImplementedError("MD5 not implemented")
         return cls(data, algorithm)
@@ -56,6 +76,8 @@ class SSHHash:
 
     def __str__(self):
         if self.algorithm == self.Algorithm.SHA256:
+            hash_string = b64encode(self.data).decode("utf-8")[:-1]
+        elif self.algorithm == self.Algorithm.SHA512:
             hash_string = b64encode(self.data).decode("utf-8")[:-1]
         elif self.algorithm == self.Algorithm.MD5:
             hash_string = ":".join([f"{b:02x}" for b in self.data])

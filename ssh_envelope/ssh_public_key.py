@@ -8,7 +8,10 @@ from ssh_envelope.ssh_utils import parse_public_key_data
 from ssh_envelope.string_utils import compact_joined, compact_joined_key_values
 
 class SSHPublicKey:
-    def __init__(self, key_data: SSHPublicKeyData, comment: str):
+    def __init__(self,
+                 key_data: SSHPublicKeyData,
+                 comment: str
+                 ):
         self._key_data = key_data
         self._comment = comment
 
