@@ -13,12 +13,10 @@ pem_header = "OPENSSH PRIVATE KEY"
 
 class SSHPrivateKey:
     def __init__(self,
-                 pem: PEM,
                  public_key_data: SSHPublicKeyData,
                  check_num: bytes,
                  private_key_data: SSHPrivateKeyData,
                  comment: str):
-        self._pem = pem
         self._public_key_data = public_key_data
         self._check_num = check_num
         self._private_key_data = private_key_data
@@ -69,7 +67,7 @@ class SSHPrivateKey:
         if not priv_buf.is_at_end:
             raise ValueError("OpenSSH private key: Extra data after padding")
 
-        return cls(pem, public_key_data, check_num, private_key_data, comment)
+        return cls(public_key_data, check_num, private_key_data, comment)
 
     def __str__(self):
         return self.pem_string
