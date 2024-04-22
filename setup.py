@@ -10,5 +10,7 @@ setup(
         ]
     },
     install_requires=[
+        'cbor2==5.6.2',
+        'cryptography==42.0.5',
     ],
 )

@@ -1,6 +1,24 @@
-## Dependencies
+## Installation
 
+You must have the Rust `envelope` command-line tool, version 0.7.2 or later installed:
+
+```shell
+$ cargo install bc-envelope-cli
+$ envelope --version
+bc-envelope-cli 0.7.2
+```
+
+For a user-install of the `ssh_envelope` tool, run the following:
+
+```shell
 pip install -r requirements.txt
+```
+
+For a develope install of the `ssh_envelope` tool, run the following:
+
+```shell
+pip install -r requirements-dev.txt
+```
 
 ## Introduction
 
