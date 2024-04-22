@@ -149,7 +149,7 @@ class Envelope:
 
         if public_key.comment:
             e = e.add_string_string_assertion("comment", public_key.comment)
-            
+
         return e
 
     def to_ssh_public_key(self) -> SSHPublicKey:
@@ -169,7 +169,12 @@ class Envelope:
         """
         Creates an envelope with an SSH signature subject.
         """
-        return cls.from_tagged_string(ssh_signature_tag, signature.pem_string)
+        e = cls.from_tagged_string(ssh_signature_tag, signature.pem_string)\
+            .add_string_string_assertion("namespace", signature.namespace)\
+            .add_string_string_assertion("hashAlgorithm", signature.hash_algorithm.name)\
+            .add_string_string_assertion("keyType", signature.type.name)
+
+        return e
 
     def to_ssh_signature(self) -> SSHSignature:
         """

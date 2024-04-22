@@ -72,6 +72,10 @@ class SSHSignature:
         return self._public_key_data
 
     @property
+    def type(self) -> SSHKeyType:
+        return self.public_key_data.type
+
+    @property
     def namespace(self) -> str:
         return self._namespace
 
