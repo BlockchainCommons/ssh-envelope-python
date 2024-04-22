@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssh_envelope"
+version = "0.1.0"
+authors = [
+    { name = "Wolf McNally", email = "wolf@wolfmcnally.com" },
+    { name = "Christopher Allen", email = "christophera@lifewithalacrity.com" },
+]
+description = "A command line tool for signing and verifying Gordian Envelopes using SSH keys."
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+license = {file = "LICENSE.md"}
+dependencies = [
+    "cbor2==5.6.2",
+    "cryptography==42.0.5",
+]
+
+[tool.setuptools]
+packages = ["ssh_envelope"]
+
+[project.scripts]
+ssh_envelope = "ssh_envelope.main:main"
