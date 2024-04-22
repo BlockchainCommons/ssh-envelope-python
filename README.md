@@ -1,5 +1,12 @@
-# SSH Envelope
+# `ssh_envelope`
 
+## A Python command line tool for signing and verifying Gordian Envelopes using SSH keys.
+
+<!--Guidelines: https://github.com/BlockchainCommons/secure-template/wiki -->
+
+### _by Wolf McNally, Blockchain Commons_
+
+**NOTE:** Preview version. Not ready for production use.
 
 ## Installation
 
@@ -64,7 +71,7 @@ $ ssh_envelope --version
 
 ## Example
 
-Note that this sequence alternates between using the Rust `envelope` command line tool and the Python `ssh_envelope` tool.
+Note that this sequence uses both the Rust `envelope` command line tool and the Python `ssh_envelope` tool. `envelope` is for general manipulation of Gordian Envelopes, while `ssh_envelope` is for working with SSH keys on envelopes. Note that `envelope` creates and verifies Schnorr signatures, while `ssh_envelope` creates and verifies SSH signatures, so you need to use the correct tool for the type of signature you are working with.
 
 ```shell
 # Create a subject to sign.
@@ -169,19 +176,22 @@ $ envelope format $SIGNED_ENVELOPE
 - If the object is an encrypted private key, the password is requested, and the unencrypted private key is used to create the envelope.
 
 ```shell
-ssh_envelope import --object-path objects/test_ed25519
+$ ssh_envelope import --object-path objects/test_ed25519
+ur:envelope/...
 ```
 
 - You can also use the `--object` option to provide the input object on the command line.
 
 ```shell
-ssh_envelope import --object "$(cat objects/test_ed25519.pub)"
+$ ssh_envelope import --object "$(cat objects/test_ed25519.pub)"
+ur:envelope/...
 ```
 
 - If no object is provided on the command line, it is read from standard input.
 
 ```shell
-ssh_envelope import < objects/test_ed25519_unencrypted
+$ ssh_envelope import < objects/test_ed25519_unencrypted
+ur:envelope/...
 ```
 
 ### Export
@@ -189,7 +199,10 @@ ssh_envelope import < objects/test_ed25519_unencrypted
 - Converts an envelope (private key, public key, or signature) back to an SSH object.
 
 ```shell
-ssh_envelope export --object ur:envelope/...
+$ ssh_envelope export --envelope $PRIVATE_KEY_1
+-----BEGIN OPENSSH PRIVATE KEY-----
+...
+-----END OPENSSH PRIVATE KEY-----
 ```
 
 ### Generate Private Key
@@ -197,7 +210,8 @@ ssh_envelope export --object ur:envelope/...
 - Generates a new Ed25519 private key and returns it as an envelope.
 
 ```shell
-ssh_envelope generate
+$ ssh_envelope generate
+ur:envelope/...
 ```
 
 ### Derive Public Key
@@ -205,29 +219,42 @@ ssh_envelope generate
 - Derives the public key from a private key and returns it as an envelope.
 
 ```shell
-ssh_envelope public --key ur:envelope/...
-```
-
-### Sign Arbitrary Data
-
-- Signs arbitrary data with a private key and returns the signature as an envelope.
-- At least either the key or the message to be signed must be provided on the command line: they cannot both be read from standard input.
-
-```shell
-ssh_envelope sign-data --key ur:envelope/... < example_data.txt
+$ ssh_envelope public --key $PRIVATE_KEY_1
+ur:envelope/...
 ```
 
 ### Add Signature to Envelope
 
 - Adds a signature to an envelope.
 - Signs the digest of the envelope's subject. Per usual, does not sign the envelope's existing assertions unless you wrap it first.
-- Adds a `'verifiedBy': 40802(<SSH Signature>)` assertion to the envelope's assertions and returns the updated envelope.
+- Adds a `'verifiedBy': SSHSignature` assertion to the envelope's assertions and returns the updated envelope.
 
 ```shell
-ssh_envelope add-signature --key ur:envelope/... --envelope ur:envelope/...
+$ ssh_envelope add-signature --key $PRIVATE_KEY_1 --envelope $WRAPPED_SUBJECT
+ur:envelope/...
+```
+
+### Verify Signature
+
+- Verifies a signature on an envelope.
+- Requires a public key to verify the signature.
+- Checks all signatures on the envelope and succeeds if any of them are valid.
+- By default, returns the original envelope on success, which can be suppressed with the `--silent` option.
+- Returns exit code 0 on success and 1 on failure.
+
+```shell
+$ ssh_envelope verify-signature --key $PUBLIC_KEY_1 --envelope $SIGNED_ENVELOPE
+ur:envelope/...
+
+$ ssh_envelope verify-signature --key $PUBLIC_KEY_1 --envelope $SIGNED_ENVELOPE --silent # prints nothing
+
+$ ssh_envelope verify-signature --key $PUBLIC_KEY_3 --envelope $SIGNED_ENVELOPE # Fails with exit code 1
+Signature verification failed
 ```
 
 ## `ssh-keygen` Cookbook
+
+This section contains recipies for interacting with `ssh-keygen`.
 
 ### Generate ED25519 Key Pair
 
