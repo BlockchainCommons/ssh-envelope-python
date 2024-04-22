@@ -5,7 +5,7 @@ pip install -r requirements.txt
 ## Introduction
 
 ```shell
-# Create a subject to sign
+# Create a subject to sign.
 SUBJECT=`envelope subject type string 'Hello, world!'`
 WRAPPED_SUBJECT=`envelope subject type wrapped $SUBJECT`
 
@@ -20,19 +20,20 @@ PUBLIC_KEY_1=`ssh_envelope public --key $PRIVATE_KEY_1`
 PRIVATE_KEY_2=`ssh_envelope generate --comment "second-key"`
 PUBLIC_KEY_2=`ssh_envelope public --key $PRIVATE_KEY_2`
 
-# Sign the subject with the two signers
+# Sign the subject with the two signers.
 SIGNED_ENVELOPE=`ssh_envelope add-signature --key $PRIVATE_KEY_1 --envelope $WRAPPED_SUBJECT`
 SIGNED_ENVELOPE=`ssh_envelope add-signature --key $PRIVATE_KEY_2 --envelope $SIGNED_ENVELOPE`
 
-# Verify both signatures
-ssh_envelope verify-signature --key $PUBLIC_KEY_1 --envelope $SIGNED_ENVELOPE
-ssh_envelope verify-signature --key $PUBLIC_KEY_2 --envelope $SIGNED_ENVELOPE
+# Verify both signatures.
+# The `--silent` option suppresses output of the verified envelope.
+ssh_envelope verify-signature --key $PUBLIC_KEY_1 --envelope $SIGNED_ENVELOPE --silent
+ssh_envelope verify-signature --key $PUBLIC_KEY_2 --envelope $SIGNED_ENVELOPE --silent
 
-# Create an unrelated signer
+# Create an unrelated signer.
 PRIVATE_KEY_3=`ssh_envelope generate`
 PUBLIC_KEY_3=`ssh_envelope public --key $PRIVATE_KEY_3`
 
-# Fail to verify the signature with the unrelated signer
+# Fail to verify the signature with the unrelated signer.
 ssh_envelope verify-signature --key $PUBLIC_KEY_3 --envelope $SIGNED_ENVELOPE
 ```
 

@@ -182,7 +182,13 @@ def verify_signature_command(args: argparse.Namespace):
     key = read_public_key(args)
     envelope = read_envelope(args)
     is_verified = envelope.verify_signature(key)
-    sys.stdout.write(f"{is_verified}\n")
+    if is_verified:
+        if not args.silent:
+            sys.stdout.write(f"{envelope.ur}\n")
+    else:
+        sys.stderr.write(f"Signature verification failed\n")
+        sys.exit(1)
+
 
 def _main(arg_array):
     if "--version" in arg_array:
@@ -240,6 +246,7 @@ def _main(arg_array):
     parser_verify_signature.add_argument('-K', '--key-path', help='Path to the file containing the public key envelope', default=None)
     parser_verify_signature.add_argument('-e', '--envelope', help='Envelope to verify', default=None)
     parser_verify_signature.add_argument('-E', '--envelope-path', help='Path to the file containing the envelope to verify', default=None)
+    parser_verify_signature.add_argument('-s', '--silent', help='Suppress output', default=False, action='store_true')
     parser_verify_signature.set_defaults(func=verify_signature_command)
 
     args = parser.parse_args(arg_array)
