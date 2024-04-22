@@ -289,7 +289,7 @@ class Envelope:
         hex = run_command(["envelope", "extract", "cbor", self.ur]).decode()
         return extract_cbor_tag_and_value(bytes.fromhex(hex))
 
-    def add_signature(self: Self, private_key: Self, namespace: str | None = None) -> Self:
+    def add_signature(self: Self, private_key: Self, namespace: str) -> Self:
         """
         Sign the envelope's subject with the given private key.
 
@@ -311,7 +311,7 @@ class Envelope:
         # Add the signature to the envelope
         return self.add_assertion(self.from_known_value("verifiedBy"), signature)
 
-    def verify_signature(self: Self, public_key: Self, namespace: str | None = None) -> bool:
+    def verify_signature(self: Self, public_key: Self) -> bool:
         """
         Verify the envelope with the given public key.
 
@@ -331,7 +331,7 @@ class Envelope:
         # Get every SSH signature on the envelope
         signatures = self.find_signatures()
         # Return True if any of the signatures are valid
-        return any(verify_message(digest, signature, ssh_public_key, namespace) for signature in signatures)
+        return any(verify_message(digest, signature, ssh_public_key) for signature in signatures)
 
     def find_signatures(self) -> list[SSHSignature]:
         """

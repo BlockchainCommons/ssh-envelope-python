@@ -9,10 +9,15 @@ pip install -r requirements.txt
 SUBJECT=`envelope subject type string 'Hello, world!'`
 WRAPPED_SUBJECT=`envelope subject type wrapped $SUBJECT`
 
-# Create two signers
-PRIVATE_KEY_1=`ssh_envelope import --object-path objects/test_ed25519_encrypted`
+# Import the first signer.
+# This key is encrypted, so you will be asked for the password, `test`.
+PRIVATE_KEY_1=`ssh_envelope import --object-path objects/test_ed25519`
 PUBLIC_KEY_1=`ssh_envelope public --key $PRIVATE_KEY_1`
-PRIVATE_KEY_2=`ssh_envelope generate`
+
+# Generate the second signer.
+# We're assigning a custom comment to this key.
+# Comments may not contain spaces.
+PRIVATE_KEY_2=`ssh_envelope generate --comment "second-key"`
 PUBLIC_KEY_2=`ssh_envelope public --key $PRIVATE_KEY_2`
 
 # Sign the subject with the two signers

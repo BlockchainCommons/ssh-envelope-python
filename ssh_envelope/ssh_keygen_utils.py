@@ -7,9 +7,7 @@ from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_signature import SSHSignature
 
-default_namespace = "file"
-
-def sign_message(message: bytes, private_key: SSHPrivateKey, namespace: str | None = None) -> SSHSignature:
+def sign_message(message: bytes, private_key: SSHPrivateKey, namespace: str) -> SSHSignature:
     with tempfile.TemporaryDirectory() as tmpdir:
         private_key_file = None
 
@@ -23,7 +21,6 @@ def sign_message(message: bytes, private_key: SSHPrivateKey, namespace: str | No
             os.chmod(private_key_file, 0o600)
 
             # Run ssh-keygen to sign the message, passing the message via stdin
-            namespace = namespace or default_namespace
             signature = run_command(["ssh-keygen", "-Y", "sign", "-f", private_key_file, "-n", namespace], stdin=message)
             return SSHSignature.from_pem_string(signature.decode())
 
@@ -34,7 +31,7 @@ def sign_message(message: bytes, private_key: SSHPrivateKey, namespace: str | No
             # Securely delete the temporary private key file
             secure_delete(private_key_file)
 
-def verify_message(message: bytes, signature: SSHSignature, public_key: SSHPublicKey, namespace: str | None = None) -> bool:
+def verify_message(message: bytes, signature: SSHSignature, public_key: SSHPublicKey) -> bool:
     with tempfile.TemporaryDirectory() as tmpdir:
         signature_file = None
         allowed_signers_file = None
@@ -49,7 +46,7 @@ def verify_message(message: bytes, signature: SSHSignature, public_key: SSHPubli
             key_type = public_key.type
             key_base64 = public_key.base64_string
             identity = public_key.comment or "identity"
-            namespace = namespace or default_namespace
+            namespace = signature.namespace
 
             # Write the public key to a temporary file in the allowed_signers format
             allowed_signers_file = os.path.join(tmpdir, "allowed_signers")

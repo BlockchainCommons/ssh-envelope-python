@@ -4,7 +4,7 @@ from ssh_envelope.ssh_key_type import SSHKeyType
 from ssh_envelope.ssh_private_key_data import SSHPrivateKeyData
 from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_public_key_data import SSHPublicKeyData
-from ssh_envelope.ssh_utils import parse_public_key_data
+from ssh_envelope.ssh_utils import check_comment, parse_public_key_data
 from ssh_envelope.string_utils import compact_joined_key_values
 
 magic = "openssh-key-v1"
@@ -17,6 +17,7 @@ class SSHPrivateKey:
                  check_num: bytes,
                  private_key_data: SSHPrivateKeyData,
                  comment: str):
+        check_comment(comment)
         self._public_key_data = public_key_data
         self._check_num = check_num
         self._private_key_data = private_key_data
@@ -117,6 +118,7 @@ class SSHPrivateKey:
         priv_buf.write_length_prefixed_string(self.comment or "")
         priv_buf.write_padding()
         buf.write_chunk(priv_buf.data)
+
         return PEM.from_header_and_data(pem_header, buf.data)
 
     @property

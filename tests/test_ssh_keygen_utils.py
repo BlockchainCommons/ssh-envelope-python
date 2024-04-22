@@ -17,7 +17,7 @@ example_private_key_envelope = 'ur:envelope/tpcstanehnkkadlsdpdpdpdpdpfwfeflgagl
 def test_sign():
     private_key_envelope = Envelope.from_ssh_object(import_ssh_object(example_ssh_private_key))
     message = b"hello"
-    signature_envelope = Envelope.from_ssh_signature(sign_message(message, private_key_envelope.to_ssh_private_key()))
+    signature_envelope = Envelope.from_ssh_signature(sign_message(message, private_key_envelope.to_ssh_private_key(), namespace="test"))
     public_key_envelope = Envelope.from_ssh_public_key(derive_public_key(private_key_envelope.to_ssh_private_key()))
     is_verified = verify_message(message, signature_envelope.to_ssh_signature(), public_key_envelope.to_ssh_public_key())
     assert(is_verified)
@@ -30,7 +30,7 @@ def test_wrap_and_sign_envelope():
 
     ssh_private_key = generate_ed25519_private()
     private_key = Envelope.from_ssh_private_key(ssh_private_key)
-    signed_envelope = wrapped_envelope.add_signature(private_key)
+    signed_envelope = wrapped_envelope.add_signature(private_key, namespace="test")
 
     ssh_public_key = derive_public_key(ssh_private_key)
     public_key = Envelope.from_ssh_public_key(ssh_public_key)

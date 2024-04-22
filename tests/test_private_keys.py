@@ -1,9 +1,16 @@
 import os
 import sys
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import load_ssh_private_key
+from cryptography.hazmat.primitives.serialization.ssh import SSHPrivateKeyTypes, SSHPublicKeyTypes;
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_root)
 
+from ssh_envelope.pem import PEM
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from tests.test_data import ed25519_private_key, ed25519_public_key, rsa_private_key, rsa_public_key, dsa_private_key, dsa_public_key, ecdsa_private_key, ecdsa_public_key
 
@@ -12,6 +19,23 @@ def test_ed25519_private_key():
     assert repr(key) == "SSHPrivateKey(type: ssh-ed25519, public_key_data: 0f2954f7a55e51303fe401d241f7bcb31495411ce66a09dfd9ed626721facde0, check_num: c90f110e, private_key_data: b6e2cd022947a7a79ded37ab4fe5d6678bdea762b60a8604984899e2455f130c0f2954f7a55e51303fe401d241f7bcb31495411ce66a09dfd9ed626721facde0, comment: wolf@Wolfs-MacBook-Pro.local)"
     assert key.pem_string == ed25519_private_key
     assert key.public_key.string == ed25519_public_key
+
+def test_generate_key():
+    pem_string_1 = Ed25519PrivateKey.generate().private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.OpenSSH,
+        encryption_algorithm=serialization.NoEncryption()
+    ).decode()
+
+    key_1 = SSHPrivateKey.from_pem_string(pem_string_1)
+    pem_string_2 = key_1.pem_string
+    pem_1 = PEM.from_pem_string(pem_string_1)
+    pem_2 = PEM.from_pem_string(pem_string_2)
+    print(len(pem_1.data))
+    print(len(pem_2.data))
+    assert(pem_1.data == pem_2.data)
+    key_2 = SSHPrivateKey.from_pem_string(pem_string_2)
+    assert(key_1 == key_2)
 
 def test_rsa_private_key():
     key = SSHPrivateKey.from_pem_string(rsa_private_key)
@@ -30,7 +54,9 @@ def test_ecdsa_private_key():
     assert repr(key) == "SSHPrivateKey(type: ecdsa-sha2-nistp256, public_key_data: 048d9320a7acb219babd96b2ffd06cdadca99647ff39b1c7ba58c40b5493769767d59fd557b92f3b10be4f5179abc1d8882d1aa37693ea5c5bf91a582d0be3da20, check_num: 4f193f66, private_key_data: 00e461ff94992dd07a77da51be4732a84f5ae4b6391fb735f1f1804c1fc6686cee, comment: wolf@Wolfs-MacBook-Pro.local)"
     assert key.pem_string == ecdsa_private_key
 
+# test_generate_key()
 # test_ed25519_private_key()
+# test_ed25519_private_key_2()
 # test_rsa_private_key()
 # test_dsa_private_key()
 # test_ecdsa_private_key()

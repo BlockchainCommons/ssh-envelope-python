@@ -11,3 +11,7 @@ def parse_public_key_data(buf: SSHReadBuffer, check_type: SSHKeyType | None = No
             raise ValueError("Invalid key type")
     key_type = SSHKeyType.from_string(type_string)
     return SSHPublicKeyData(buf, key_type)
+
+def check_comment(comment: str):
+    if any([c.isspace() for c in comment]):
+            raise ValueError("Comment may not contain whitespace.")

@@ -118,4 +118,6 @@ def derive_public_key(private_key_object: SSHPrivateKey) -> SSHPublicKey:
         format=serialization.PublicFormat.OpenSSH
     ).decode()
 
-    return SSHPublicKey.from_string(ssh_public_key)
+    key = SSHPublicKey.from_string(ssh_public_key)
+    key.comment = private_key_object.comment
+    return key

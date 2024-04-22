@@ -4,7 +4,7 @@ from ssh_envelope.ssh_buffer import SSHReadBuffer, SSHWriteBuffer
 from ssh_envelope.ssh_hash import SSHHash
 from ssh_envelope.ssh_key_type import SSHKeyType
 from ssh_envelope.ssh_public_key_data import SSHPublicKeyData
-from ssh_envelope.ssh_utils import parse_public_key_data
+from ssh_envelope.ssh_utils import check_comment, parse_public_key_data
 from ssh_envelope.string_utils import compact_joined, compact_joined_key_values
 
 class SSHPublicKey:
@@ -12,6 +12,7 @@ class SSHPublicKey:
                  key_data: SSHPublicKeyData,
                  comment: str
                  ):
+        check_comment(comment)
         self._key_data = key_data
         self._comment = comment
 

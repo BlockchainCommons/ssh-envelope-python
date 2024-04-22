@@ -109,7 +109,10 @@ def export_command(args: argparse.Namespace):
 
 def generate_command(args: argparse.Namespace):
     logger.info(f"Generating Ed25519 private key")
-    envelope = Envelope.from_ssh_private_key(generate_ed25519_private())
+    key = generate_ed25519_private()
+    if args.comment:
+        key.comment = args.comment
+    envelope = Envelope.from_ssh_private_key(key)
     sys.stdout.write(envelope.ur + '\n')
 
 
@@ -166,7 +169,7 @@ def add_signature_command(args: argparse.Namespace):
 
     key = read_private_key(args)
     envelope = read_envelope(args)
-    signed_envelope = envelope.add_signature(key, namespace="envelope")
+    signed_envelope = envelope.add_signature(key, namespace=args.namespace)
     sys.stdout.write(signed_envelope.ur + '\n')
 
 
@@ -178,11 +181,14 @@ def verify_signature_command(args: argparse.Namespace):
 
     key = read_public_key(args)
     envelope = read_envelope(args)
-    is_verified = envelope.verify_signature(key, namespace="envelope")
+    is_verified = envelope.verify_signature(key)
     sys.stdout.write(f"{is_verified}\n")
 
+def _main(arg_array):
+    if "--version" in arg_array:
+        print("SSH Envelope version 0.1.0")
+        sys.exit(0)
 
-def main():
     parser = argparse.ArgumentParser(description="Envelope/SSH Key Management Tool")
     subparsers = parser.add_subparsers(help='commands')
 
@@ -225,6 +231,7 @@ def main():
     parser_add_signature.add_argument('-K', '--key-path', help='Path to the file containing the private key envelope', default=None)
     parser_add_signature.add_argument('-e', '--envelope', help='Envelope to sign', default=None)
     parser_add_signature.add_argument('-E', '--envelope-path', help='Path to the file containing the envelope to sign', default=None)
+    parser_add_signature.add_argument('-n', '--namespace', help='Namespace for the signature', default='envelope')
     parser_add_signature.set_defaults(func=add_signature_command)
 
     # verify_signature_command
@@ -235,7 +242,7 @@ def main():
     parser_verify_signature.add_argument('-E', '--envelope-path', help='Path to the file containing the envelope to verify', default=None)
     parser_verify_signature.set_defaults(func=verify_signature_command)
 
-    args = parser.parse_args()
+    args = parser.parse_args(arg_array)
     if hasattr(args, 'func'):
         try:
             args.func(args)
@@ -245,6 +252,9 @@ def main():
     else:
         parser.print_help()
         sys.exit(1)
+
+def main():
+    _main(sys.argv[1:])
 
 if __name__ == "__main__":
     main()

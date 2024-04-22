@@ -11,9 +11,10 @@
             "program": "${workspaceFolder}/ssh_envelope/main.py",
             "console": "integratedTerminal",
             "args": [
-                "import",
-                "--object-path",
-                "objects/example_data.txt.sig"
+                "--version"
+                // "import",
+                // "--object-path",
+                // "objects/example_data.txt.sig"
             ]
         },
         {
