@@ -3,10 +3,11 @@ import argparse
 import sys
 
 from ssh_envelope import logconfig
+from ssh_envelope.ssh_private_key import SSHPrivateKey
 __all__ = ['logconfig']
 
 from ssh_envelope.envelope import Envelope
-from ssh_envelope.ssh_keygen_utils import sign_message
+from ssh_envelope.ssh_keygen_utils import extract_comment_from_path, sign_message
 
 from ssh_envelope.ssh_object_utils import derive_public_key, generate_ed25519_private, import_ssh_object
 
@@ -65,7 +66,7 @@ def read_object_data(args) -> str:
         object_data = args.object
     elif args.object_path:
         logger.info("Reading SSH object from --object-path")
-        with open(args.object_path, 'r') as file:
+        with open(args.object_path) as file:
             object_data = file.read()
     else:
         logger.info("Reading SSH object from stdin")
@@ -76,7 +77,20 @@ def read_object_data(args) -> str:
 def import_command(args: argparse.Namespace):
     logger.info(f"Importing SSH object")
     object_data = read_object_data(args)
-    envelope = Envelope.from_ssh_object(import_ssh_object(object_data))
+    object = import_ssh_object(object_data)
+    # This is a workaround to set the comment on the private key object because
+    # OpenSSH encrypted private key files do *not* contain a comment field, even
+    # though a *decrypted* private key files and public key file do. When asked
+    # to extract the comment from a private key file, ssh-keygen sneakily gets
+    # it from the public key file if a sibling file exists with the same name
+    # and a .pub extension. So if the user is importing an encrypted private key
+    # from a file path, and we don't get a comment, then we're going to ask
+    # ssh-keygen to do it.
+    if isinstance(object, SSHPrivateKey)\
+        and object.comment == ''\
+        and args.object_path:
+        object.comment = extract_comment_from_path(args.object_path)
+    envelope = Envelope.from_ssh_object(object)
     sys.stdout.write(envelope.ur + '\n')
 
 

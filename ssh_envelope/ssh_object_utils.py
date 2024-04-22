@@ -7,6 +7,7 @@ from cryptography.hazmat.primitives.serialization.ssh import SSHPrivateKeyTypes,
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
+from ssh_envelope.ssh_keygen_utils import extract_comment
 from ssh_envelope.ssh_private_key import SSHPrivateKey
 from ssh_envelope.ssh_public_key import SSHPublicKey
 from ssh_envelope.ssh_signature import SSHSignature
@@ -44,7 +45,7 @@ def import_private_key(string: str) -> SSHPrivateKey:
                 logger.info("Attempting to load SSH key without password")
                 private_key = load_private_key(input_data)
                 logger.info("SSH key loaded successfully without password")
-                return SSHPrivateKey.from_pem_string(serialize_private_key(private_key))
+                return SSHPrivateKey.from_pem_string(string)
             else:
                 logger.info(f"Attempt {attempt}/{max_attempts}: Prompting for password")
                 password = getpass("Enter the password for the SSH key: ").encode()

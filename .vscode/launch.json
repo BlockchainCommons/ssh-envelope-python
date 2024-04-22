@@ -13,7 +13,7 @@
             "args": [
                 "import",
                 "--object-path",
-                "objects/test_ed25519_encrypted"
+                "objects/test_ed25519.pub"
             ]
         },
         {

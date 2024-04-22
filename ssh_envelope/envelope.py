@@ -79,6 +79,13 @@ class Envelope:
         return cls(run_command(["envelope", "subject", "type", "string", string]).decode().strip())
 
     @classmethod
+    def from_int(cls, value: int):
+        """
+        Creates an envelope with an integer subject.
+        """
+        return cls(run_command(["envelope", "subject", "type", "number", str(value)]).decode().strip())
+
+    @classmethod
     def from_tagged_string(cls, tag: int, string: str):
         """
         Creates an envelope with a CBOR-tagged string subject.
@@ -108,7 +115,15 @@ class Envelope:
         """
         Creates an envelope with an SSH private key subject.
         """
-        return cls.from_tagged_string(ssh_private_key_tag, private_key.pem_string)
+        e: Envelope = cls.from_tagged_string(ssh_private_key_tag, private_key.pem_string)\
+            .add_string_int_assertion("keySize", private_key.key_size)\
+            .add_string_string_assertion("fingerprint", private_key.fingerprint)\
+            .add_string_string_assertion("type", private_key.type_name)
+
+        if private_key.comment:
+            e = e.add_string_string_assertion("comment", private_key.comment)
+
+        return e
 
     def to_ssh_private_key(self) -> SSHPrivateKey:
         """
@@ -217,6 +232,32 @@ class Envelope:
         :return: The envelope with the new assertion.
         """
         return self.__class__(run_command(["envelope", "assertion", "add", "pred-obj", "envelope", pred.ur, "envelope", obj.ur, self.ur]).decode().strip())
+
+    def add_string_string_assertion(self: Self, pred: str, obj: str) -> Self:
+        """
+        Adds an assertion with string predicate and object to the envelope.
+
+        The returned envelope will have a new assertion with the given predicate
+        and object.
+
+        :param pred: The predicate of the assertion.
+        :param obj: The object of the assertion.
+        :return: The envelope with the new assertion.
+        """
+        return self.__class__(run_command(["envelope", "assertion", "add", "pred-obj", "string", pred, "string", obj, self.ur]).decode().strip())
+
+    def add_string_int_assertion(self: Self, pred: str, obj: int) -> Self:
+        """
+        Adds an assertion with string predicate and integer object to the envelope.
+
+        The returned envelope will have a new assertion with the given predicate
+        and object.
+
+        :param pred: The predicate of the assertion.
+        :param obj: The object of the assertion.
+        :return: The envelope with the new assertion.
+        """
+        return self.__class__(run_command(["envelope", "assertion", "add", "pred-obj", "string", pred, "number", str(obj), self.ur]).decode().strip())
 
     def wrapped(self):
         """

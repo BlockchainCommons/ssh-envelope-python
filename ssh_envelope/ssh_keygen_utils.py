@@ -67,3 +67,34 @@ def verify_message(message: bytes, signature: SSHSignature, public_key: SSHPubli
             # Securely delete the temporary files
             secure_delete(signature_file)
             secure_delete(allowed_signers_file)
+
+def extract_comment(object: str) -> str | None:
+    object_file = None
+
+    try:
+        # Write the object to a temporary file
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            f.write(object.encode())
+            object_file = f.name
+
+        # Run ssh-keygen to extract the comment from the object
+        comment = run_command(["ssh-keygen", "-l", "-f", object_file])
+        return comment.decode().strip()
+
+    finally:
+        # Securely delete the temporary file
+        secure_delete(object_file)
+
+def extract_comment_from_path(path: str) -> str:
+    comment = run_command(["ssh-keygen", "-l", "-f", path])
+    components = comment.decode().strip().split(sep=" ")
+    if len(components) < 4:
+        return ''
+    # drop the last component and the first two components, return the remaining components joined by space
+    comment = ' '.join(components[2:-1])
+    # This is what ssh-keygen returns when there is no comment. Note that it has a space
+    # in it, which is why we have to do the dance with dropping the first and last two components
+    # above.
+    if comment == 'no comment':
+        comment = ''
+    return comment

@@ -56,10 +56,6 @@ class SSHPublicKey:
         return self.key_data.type
 
     @property
-    def comment(self) -> str:
-        return self._comment or ""
-
-    @property
     def chunks(self) -> List[bytes]:
         return [str(self.type).encode()] + self.key_data.chunks
 
@@ -83,6 +79,10 @@ class SSHPublicKey:
     @property
     def fingerprint(self) -> str:
         return str(self.hash())
+
+    @property
+    def comment(self) -> str:
+        return self._comment or ""
 
     @property
     def type_name(self) -> str:

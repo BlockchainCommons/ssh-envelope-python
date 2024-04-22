@@ -12,7 +12,7 @@ none = "none"
 pem_header = "OPENSSH PRIVATE KEY"
 
 class SSHPrivateKey:
-    def __init__(self, pem, public_key_data, check_num, private_key_data, comment):
+    def __init__(self, pem: PEM, public_key_data: SSHPublicKeyData, check_num: bytes, private_key_data: SSHPrivateKeyData, comment: str):
         self._pem = pem
         self._public_key_data = public_key_data
         self._check_num = check_num
@@ -141,5 +141,21 @@ class SSHPrivateKey:
         return self._private_key_data
 
     @property
-    def comment(self) -> str | None:
+    def key_size(self) -> int:
+        return self.public_key.key_size
+
+    @property
+    def fingerprint(self) -> str:
+        return self.public_key.fingerprint
+
+    @property
+    def comment(self) -> str:
         return self._comment
+
+    @comment.setter
+    def comment(self, value: str):
+        self._comment = value
+
+    @property
+    def type_name(self) -> str:
+        return str(self.type.name)
