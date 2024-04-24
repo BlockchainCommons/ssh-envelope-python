@@ -18,7 +18,7 @@ __all__ = ['logconfig']
 logger = logging.getLogger(__name__)
 
 def import_ssh_object(string: str) -> SSHPrivateKey | SSHPublicKey | SSHSignature:
-    import_functions = [import_signature, import_public_key, import_private_key]
+    import_functions = [import_signature, import_public_key]
 
     for import_func in import_functions:
         try:
@@ -27,7 +27,9 @@ def import_ssh_object(string: str) -> SSHPrivateKey | SSHPublicKey | SSHSignatur
         except Exception:
             pass
 
-    raise ValueError("Failed to import SSH object")
+    object = import_private_key(string)
+    return object
+    # raise ValueError("Failed to import SSH object")
 
 def import_signature(string: str) -> SSHSignature:
     return SSHSignature.from_pem_string(string)

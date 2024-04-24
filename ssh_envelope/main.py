@@ -4,7 +4,9 @@
 
 import logging
 import argparse
+import os
 import sys
+import traceback
 
 from ssh_envelope import logconfig
 from ssh_envelope.ssh_private_key import SSHPrivateKey
@@ -256,11 +258,17 @@ def _main(arg_array):
 
     args = parser.parse_args(arg_array)
     if hasattr(args, 'func'):
-        try:
+        # try:
             args.func(args)
-        except Exception as e:
-            sys.stderr.write(f"Error: {str(e)}\n")
-            sys.exit(1)
+        # except Exception as e:
+        #     exc_type, exc_obj, exc_tb = sys.exc_info()
+        #     if exc_tb is not None:
+        #         traceback_info = traceback.extract_tb(exc_tb)
+        #         file_name, line_number, _, _ = traceback_info[-1]
+        #         sys.stderr.write(f"Error: {str(e)}\nFile: {file_name}, Line: {line_number}\n")
+        #     else:
+        #         sys.stderr.write(f"Error: {str(e)}\n")
+        #     sys.exit(1)
     else:
         parser.print_help()
         sys.exit(1)
