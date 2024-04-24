@@ -36,6 +36,8 @@ $ python --version
 Python 3.12.2
 ```
 
+> 🍎 (Mac): If you don't have Python 3 installed, [`brew pyenv` and use that to install and set your global Python](https://www.freecodecamp.org/news/how-to-install-python-3-on-mac-and-update-the-python-version-macos-homebrew-command-guide/).
+
 Ensure you have the [Rust](https://www.rust-lang.org/learn/get-started) `envelope` command-line tool, version 0.7.2 or later installed:
 
 ```shell
@@ -43,6 +45,8 @@ $ cargo install bc-envelope-cli
 $ envelope --version
 bc-envelope-cli 0.7.2
 ```
+
+> 🍎 (Mac): If you don't have `cargo`, you can `brew rust`.
 
 Clone the repository, and navigate to the project directory:
 
@@ -56,6 +60,8 @@ Install the tool and its dependencies:
 ```shell
 $ pip install .
 ```
+
+> 🍎 (Mac): If you also use Xcode on an M1, you may still have issues with your python environment. If all fails, use `pyenv exec pip install .` instead.
 
 Optional, instead of previous step: For a developer install of the `ssh_envelope` tool, run the following:
 
