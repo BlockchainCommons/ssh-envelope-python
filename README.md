@@ -6,7 +6,7 @@
 
 ### _by Wolf McNally, Blockchain Commons_
 
-**NOTE:** Preview version. Not ready for production use.
+**NOTE:** This repo is now **deprecated**. It has been superseded by the [Gordian Envelope CLI tool](https://github.com/BlockchainCommons/bc-envelope-cli-rust).
 
 ## Installation
 
